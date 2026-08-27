@@ -22,3 +22,10 @@ Phase A proves two load-bearing mechanisms, each half verified by a different en
 PGlite proved the RLS half (running in every CI job). The Postgres half (concurrent
 claimants) runs only in the `postgres` CI job — this build box has no Postgres server.
 See [DECISIONS.md §Recorded during Phase A](DECISIONS.md) for measured results.
+
+## Phase B — the tenancy core is complete
+
+Five nouns from SPEC.md feature 1 now exist, all under RLS: tenants, memberships,
+invites, entitlements, and defaults. The leak suite proves all four verbs (SELECT,
+INSERT, UPDATE, DELETE) plus the re-home refusal across seven tables. Entitlement
+numbers are stored but not yet enforced.

@@ -61,6 +61,6 @@ are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it
 - [x] §B10 — Update `README.md`: Phase B status (tenancy core complete, limits
       stored but not enforced) and one Layout line for `src/tenancy/`. Every
       command shown must already work. Gate: `bash verify.sh` green.
-- [ ] §B11 — Close the phase: append a Phase B section to `STATUS.md`, flip
+- [x] §B11 — Close the phase: append a Phase B section to `STATUS.md`, flip
       `ROADMAP.md` row #1 to SHIPPED, and update the reservations ledger as
       §B11 describes. Gate: `bash verify.sh` green.
