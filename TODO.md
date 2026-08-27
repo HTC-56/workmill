@@ -46,7 +46,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it
 - [x] §B5 — Write `test/tenancy.test.ts`: assertions for `provisionTenant` in
       `src/tenancy/provision.ts` — the four rows, the defaults, the rollback.
       Pattern file `test/seam.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §B6 — Write `test/members.test.ts`: invite, accept, become a member; the
+- [x] §B6 — Write `test/members.test.ts`: invite, accept, become a member; the
       raw token is never stored; a spent token refuses. Pattern file
       `test/seam.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §B7 — Extend `test/members.test.ts` with expiry, `revokeInvite`,
