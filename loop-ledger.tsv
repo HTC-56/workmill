@@ -11,3 +11,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-27T15:48:18	loop	qwen	commit	58	11899	21	2	212	- [ ] §B4 — Extend `test/leak.test.ts` with one case per table: re-homing a row
 2026-08-27T15:53:51	loop	qwen	commit	126	26187	45	7	332	- [ ] §B5 — Write `test/tenancy.test.ts`: assertions for `provisionTenant` in
 2026-08-27T16:01:57	loop	qwen	commit	131	30630	51	12	484	- [ ] §B6 — Write `test/members.test.ts`: invite, accept, become a member; the
+2026-08-27T16:17:50	loop	qwen	commit	126	29644	51	13	952	- [ ] §B7 — Extend `test/members.test.ts` with expiry, `revokeInvite`,
