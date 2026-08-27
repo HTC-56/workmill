@@ -27,7 +27,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_A.md and read it
 - [x] §A8 — Write `README.md`: what workmill is, Phase A status, quickstart,
       the two engines, the gates, the layout. Every command shown must already
       work. Gate: typecheck + test + scrub-check.
-- [ ] §A9 — Write `verify.sh`: typecheck, test, scrub-check, plus a lint that
+- [x] §A9 — Write `verify.sh`: typecheck, test, scrub-check, plus a lint that
       every `pnpm <name>` / `bash <path>` shown in README.md really exists.
       Pattern file `scripts/scrub-check.sh`. Gate: `bash verify.sh` green.
 - [ ] §A10 — Close the phase: append a Phase A section to `STATUS.md` and fill
