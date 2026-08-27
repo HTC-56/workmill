@@ -43,7 +43,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it
 - [x] §B4 — Extend `test/leak.test.ts` with one case per table: re-homing a row
       you own into another tenant is refused by the policy's WITH CHECK half.
       Keep every existing case. Gate: typecheck + test + scrub-check.
-- [ ] §B5 — Write `test/tenancy.test.ts`: assertions for `provisionTenant` in
+- [x] §B5 — Write `test/tenancy.test.ts`: assertions for `provisionTenant` in
       `src/tenancy/provision.ts` — the four rows, the defaults, the rollback.
       Pattern file `test/seam.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §B6 — Write `test/members.test.ts`: invite, accept, become a member; the
