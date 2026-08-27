@@ -138,4 +138,74 @@ describe.each(EXPECTED_TABLES)('tenant isolation on %s', (table) => {
       withTenant(db, alice.id, (sql) => insertForeignRow(sql, table, bob)),
     ).rejects.toThrow(/row-level security/i);
   });
+
+  /**
+   * UPDATE and DELETE do not throw. A policy refuses them by matching zero
+   * rows, so the correct assertion is "zero rows affected AND the victim row
+   * is still there".
+   */
+
+  /** Per-table SET clause for an UPDATE that is harmless but exercises the path. */
+  function setClause(t: string): string {
+    if (t === 'tenants') return "slug = 'hacked'";
+    if (t === 'work_orders') return "state = 'done'";
+    if (t === 'jobs') return "state = 'failed'";
+    throw new Error(`leak suite has no UPDATE SET clause for "${t}" — add one here`);
+  }
+
+  it("UPDATE targeting another tenant's row id returns zero rows", async () => {
+    const rows = await withTenant(db, alice.id, (sql) =>
+      sql.query<{ id: string }>(
+        `UPDATE ${table} SET ${setClause(table)} WHERE id = $1 RETURNING id`,
+        [seeded.get(table)!.bob],
+      ),
+    );
+    expect(rows).toHaveLength(0);
+  });
+
+  it("still finds another tenant's row intact after a failed UPDATE", async () => {
+    // Run the UPDATE again so we test the full path under a single withTenant.
+    await withTenant(db, alice.id, (sql) =>
+      sql.query(
+        `UPDATE ${table} SET ${setClause(table)} WHERE id = $1`,
+        [seeded.get(table)!.bob],
+      ),
+    );
+    // withAdmin should still see the original row unchanged.
+    const row = await withAdmin(db, (sql) =>
+      sql.query(`SELECT * FROM ${table} WHERE id = $1`, [seeded.get(table)!.bob]),
+    );
+    expect(row).toHaveLength(1);
+  });
+
+  it("DELETE targeting another tenant's row id returns zero rows", async () => {
+    const rows = await withTenant(db, alice.id, (sql) =>
+      sql.query<{ id: string }>(
+        `DELETE FROM ${table} WHERE id = $1 RETURNING id`,
+        [seeded.get(table)!.bob],
+      ),
+    );
+    expect(rows).toHaveLength(0);
+  });
+
+  it("still finds another tenant's row intact after a failed DELETE", async () => {
+    // Run the DELETE again to test the full path under a single withTenant.
+    await withTenant(db, alice.id, (sql) =>
+      sql.query(`DELETE FROM ${table} WHERE id = $1`, [seeded.get(table)!.bob]),
+    );
+    const row = await withAdmin(db, (sql) =>
+      sql.query(`SELECT * FROM ${table} WHERE id = $1`, [seeded.get(table)!.bob]),
+    );
+    expect(row).toHaveLength(1);
+  });
+
+  it("UPDATE with no WHERE only touches the current tenant's rows", async () => {
+    // The strongest test: policy — not the query — is what protects bob.
+    const rows = await withTenant(db, alice.id, (sql) =>
+      sql.query<{ scope: string }>(
+        `UPDATE ${table} SET ${setClause(table)} RETURNING ${column()} AS scope`,
+      ),
+    );
+    for (const row of rows) expect(row.scope).toBe(alice.id);
+  });
 });

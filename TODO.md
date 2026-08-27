@@ -21,7 +21,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_A.md and read it
 - [x] §A6 — Write `test/seam.test.ts`: prove `withTenant` pins the role and the
       tenant, and that neither survives the transaction. Pattern file
       `test/leak.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §A7 — Extend `test/leak.test.ts` with the cross-tenant UPDATE and DELETE
+- [x] §A7 — Extend `test/leak.test.ts` with the cross-tenant UPDATE and DELETE
       cases. They refuse by matching zero rows, not by throwing. Keep every
       existing case. Gate: typecheck + test + scrub-check.
 - [ ] §A8 — Write `README.md`: what workmill is, Phase A status, quickstart,
