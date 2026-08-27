@@ -52,7 +52,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it
 - [x] §B7 — Extend `test/members.test.ts` with expiry, `revokeInvite`,
       `revokeMembership`, and the one-live-invite-per-address rule. Keep every
       existing case. Gate: typecheck + test + scrub-check.
-- [ ] §B8 — Write `src/tenancy/entitlements.ts`: a typed read of the current
+- [x] §B8 — Write `src/tenancy/entitlements.ts`: a typed read of the current
       tenant's limits, plus `isModelAllowed`. Read only — no enforcement.
       Pattern file `src/queue/enqueue.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §B9 — Write `test/entitlements.test.ts`: assertions for §B8, including a
