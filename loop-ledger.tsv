@@ -1,3 +1,4 @@
 time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-27T14:51:54	plan	claude	commit	77	117514	42	0	692	plan next phase
 2026-08-27T15:15:52	loop	qwen	commit	82	98393	29	7	1407	- [ ] §A4 — Write `scripts/scrub-check.sh`: the public-repo gate. Greps tracked
+2026-08-27T15:18:13	loop	qwen	commit	140	108838	53	15	139	- [ ] §A5 — Write `test/migrate.test.ts`: assertions for `loadMigrations` and
