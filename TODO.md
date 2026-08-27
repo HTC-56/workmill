@@ -15,7 +15,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_A.md and read it
       files for private hostnames, non-doc IPv4, home paths, key material.
       Exclude the script itself and `pnpm-lock.yaml` or it fails forever.
       Gate: `pnpm typecheck` + `pnpm test` + the script passing on this tree.
-- [ ] §A5 — Write `test/migrate.test.ts`: assertions for `loadMigrations` and
+- [x] §A5 — Write `test/migrate.test.ts`: assertions for `loadMigrations` and
       `migrate` in `src/db/migrate.ts`. Pattern file `test/claim.test.ts`.
       Gate: typecheck + test + scrub-check.
 - [ ] §A6 — Write `test/seam.test.ts`: prove `withTenant` pins the role and the
