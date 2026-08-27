@@ -51,3 +51,38 @@
 ## Open Questions
 
 *(none — SPEC.md answers v1 in full)*
+
+## Recorded during Phase A (2026-08-27) — measured, not assumed
+
+These are results, not choices. The engines rule pre-registered what to measure;
+this is what the measurement said.
+
+- **PGlite enforces RLS in full.** Under `SET LOCAL ROLE workmill_app`, a
+  cross-tenant SELECT returns nothing, a cross-tenant INSERT raises `new row
+  violates row-level security policy`, and a cross-tenant UPDATE/DELETE reports
+  zero rows affected with the victim row intact. The SPEC.md fallback ("if
+  PGlite cannot enforce RLS at all, tests require `DATABASE_URL`") is therefore
+  **not triggered** — both CI engine jobs stay.
+- **Refusal shape differs by verb**, and leak-suite assertions must too: INSERT
+  refuses with a thrown error (`WITH CHECK`), while SELECT/UPDATE/DELETE refuse
+  by filtering to zero rows (`USING`). An UPDATE test written to expect a thrown
+  error is testing the wrong thing.
+- **The two-competing-claimants case is Postgres-only** (pre-registered).
+  PGlite serves one connection, so two overlapping transactions cannot exist.
+  It is skipped there, and `test/claim.test.ts` asserts the skip matches the
+  engine's own `supportsConcurrentSessions` flag — the authoritative job cannot
+  skip it quietly.
+- **The Postgres half of Phase A's proof is unverified on the build box**: it
+  has no Postgres server and no docker permission. The `postgres` CI job is the
+  only place it executes. Treat a first green run of that job as the completion
+  of Phase A's pre-registered proof.
+- **Claim order is `(run_at, created_at, order_id, idx)`, not `id`.** Every item
+  of one order shares a `created_at`, so a uuid tiebreak shuffles a five-item
+  order into random order. Related: `UPDATE … RETURNING` has no defined row
+  order in Postgres, so the claim wraps its update in a CTE and sorts the
+  output. Both are commented at the query in `src/queue/claim.ts`.
+- **Tenant-scoped tables declare themselves** with
+  `COMMENT ON TABLE x IS 'tenant-scoped:<column>'`. The leak suite discovers
+  them from the catalog at runtime; there is no hand-maintained list of what to
+  check. Adding a tenant-scoped table means adding its marker, its policies, and
+  one fixture in `test/leak.test.ts`.
