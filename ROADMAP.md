@@ -21,4 +21,9 @@ planning lane declares PROJECT SPEC COMPLETE rather than inventing scope.
 
 ## Reservations ledger — small deferred calls recorded inside phase specs
 
-*(empty at scaffold; each entry names its home)*
+- **job lifecycle beyond claim** — heartbeat, lease reaper, retries with backoff,
+  dead-letter, cancel — deferred to the phase that builds the runner;
+- **users, memberships, invites and entitlements** — the rest of ROADMAP row #1;
+- **`verify.sh` does not yet run `scripts/live-check.sh`** — that lands with the
+  gateway;
+- **the CI workflow will need a `verify` step** once more gates exist.
