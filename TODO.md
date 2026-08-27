@@ -40,7 +40,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_A.md and read it
 src/tenancy/members.ts, plus leak-suite fixtures for the four new tables). These
 are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it.
 
-- [ ] §B4 — Extend `test/leak.test.ts` with one case per table: re-homing a row
+- [x] §B4 — Extend `test/leak.test.ts` with one case per table: re-homing a row
       you own into another tenant is refused by the policy's WITH CHECK half.
       Keep every existing case. Gate: typecheck + test + scrub-check.
 - [ ] §B5 — Write `test/tenancy.test.ts`: assertions for `provisionTenant` in

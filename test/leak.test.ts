@@ -293,6 +293,41 @@ describe.each(EXPECTED_TABLES)('tenant isolation on %s', (table) => {
     expect(row).toHaveLength(1);
   });
 
+  /**
+   * Re-homing a row into another tenant is refused by the WITH CHECK half
+   * of the policy. The USING clause permits the UPDATE (alice owns the row),
+   * but the WITH CHECK clause fires after and rejects the new tenant_id value.
+   */
+  it("UPDATE setting the tenant column to another tenant is refused", async () => {
+    // Count rows carrying bob's tenant id before the attempt.
+    const [pre] = await withAdmin(db, (sql) =>
+      sql.query<{ n: string | number }>(
+        `SELECT count(*) AS n FROM ${table} WHERE ${column()} = $1`,
+        [bob.id],
+      ),
+    );
+    const preBob = Number(pre?.n);
+
+    // As alice, try to rewrite her own row so it belongs to bob.
+    await expect(
+      withTenant(db, alice.id, (sql) =>
+        sql.query(`UPDATE ${table} SET ${column()} = $1 WHERE id = $2 RETURNING *`, [
+          bob.id,
+          seeded.get(table)!.alice,
+        ]),
+      ),
+    ).rejects.toThrow(/row-level security/i);
+
+    // The count of bob's rows must be unchanged.
+    const [post] = await withAdmin(db, (sql) =>
+      sql.query<{ n: string | number }>(
+        `SELECT count(*) AS n FROM ${table} WHERE ${column()} = $1`,
+        [bob.id],
+      ),
+    );
+    expect(Number(post?.n)).toBe(preBob);
+  });
+
   it("UPDATE with no WHERE only touches the current tenant's rows", async () => {
     // The strongest test: policy — not the query — is what protects bob.
     const rows = await withTenant(db, alice.id, (sql) =>
