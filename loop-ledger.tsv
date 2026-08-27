@@ -4,3 +4,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-27T15:18:13	loop	qwen	commit	140	108838	53	15	139	- [ ] §A5 — Write `test/migrate.test.ts`: assertions for `loadMigrations` and
 2026-08-27T15:20:12	loop	qwen	commit	100	16858	40	12	118	- [ ] §A6 — Write `test/seam.test.ts`: prove `withTenant` pins the role and the
 2026-08-27T15:22:12	loop	qwen	commit	83	14796	31	7	118	- [ ] §A7 — Extend `test/leak.test.ts` with the cross-tenant UPDATE and DELETE
+2026-08-27T15:23:49	loop	qwen	commit	83	13816	32	5	96	- [ ] §A8 — Write `README.md`: what workmill is, Phase A status, quickstart,
