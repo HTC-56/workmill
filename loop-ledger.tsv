@@ -13,3 +13,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-27T16:01:57	loop	qwen	commit	131	30630	51	12	484	- [ ] §B6 — Write `test/members.test.ts`: invite, accept, become a member; the
 2026-08-27T16:17:50	loop	qwen	commit	126	29644	51	13	952	- [ ] §B7 — Extend `test/members.test.ts` with expiry, `revokeInvite`,
 2026-08-27T16:23:58	loop	qwen	commit	99	17708	38	8	366	- [ ] §B8 — Write `src/tenancy/entitlements.ts`: a typed read of the current
+2026-08-27T16:32:02	loop	qwen	commit	91	14775	36	9	483	- [ ] §B9 — Write `test/entitlements.test.ts`: assertions for §B8, including a
