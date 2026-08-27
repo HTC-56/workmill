@@ -18,7 +18,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_A.md and read it
 - [x] §A5 — Write `test/migrate.test.ts`: assertions for `loadMigrations` and
       `migrate` in `src/db/migrate.ts`. Pattern file `test/claim.test.ts`.
       Gate: typecheck + test + scrub-check.
-- [ ] §A6 — Write `test/seam.test.ts`: prove `withTenant` pins the role and the
+- [x] §A6 — Write `test/seam.test.ts`: prove `withTenant` pins the role and the
       tenant, and that neither survives the transaction. Pattern file
       `test/leak.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §A7 — Extend `test/leak.test.ts` with the cross-tenant UPDATE and DELETE
