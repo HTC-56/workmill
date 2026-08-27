@@ -24,7 +24,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_A.md and read it
 - [x] §A7 — Extend `test/leak.test.ts` with the cross-tenant UPDATE and DELETE
       cases. They refuse by matching zero rows, not by throwing. Keep every
       existing case. Gate: typecheck + test + scrub-check.
-- [ ] §A8 — Write `README.md`: what workmill is, Phase A status, quickstart,
+- [x] §A8 — Write `README.md`: what workmill is, Phase A status, quickstart,
       the two engines, the gates, the layout. Every command shown must already
       work. Gate: typecheck + test + scrub-check.
 - [ ] §A9 — Write `verify.sh`: typecheck, test, scrub-check, plus a lint that
