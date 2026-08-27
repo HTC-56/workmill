@@ -67,11 +67,13 @@ describe('migrate', () => {
           'SELECT version, name FROM schema_migrations ORDER BY version',
         ),
       );
-      expect(rows.length).toBe(2);
-      expect(rows.at(0)!.version).toBe(1);
+      // Derived from disk, not hard-coded: a new migration must not make this
+      // test fail, but a migration that fails to record itself still must.
+      const onDisk = await loadMigrations();
+      expect(rows.map((r) => [Number(r.version), r.name])).toEqual(
+        onDisk.map((m) => [m.version, m.name]),
+      );
       expect(rows.at(0)!.name).toBe('001_tenancy.sql');
-      expect(rows.at(1)!.version).toBe(2);
-      expect(rows.at(1)!.name).toBe('002_queue.sql');
 
       // Second call returns empty — already applied.
       const ran = await migrate(engine);

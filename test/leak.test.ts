@@ -1,3 +1,4 @@
+import { createHash, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Engine, Session } from '../src/db/engine.js';
 import { discoverTenantScopedTables, type TenantScopedTable } from '../src/seam/catalog.js';
@@ -19,7 +20,25 @@ import { freshDb, makeTenant, type TestTenant } from './helpers/db.js';
  */
 
 /** Names are needed at collection time; `discovery matches` proves the list honest. */
-const EXPECTED_TABLES = ['tenants', 'work_orders', 'jobs'] as const;
+const EXPECTED_TABLES = [
+  'tenants',
+  'users',
+  'memberships',
+  'invites',
+  'entitlements',
+  'work_orders',
+  'jobs',
+] as const;
+
+/** A unique address per fixture row; the users index is unique per tenant. */
+function freshEmail(prefix: string): string {
+  return `${prefix}-${randomUUID().slice(0, 8)}@example.test`;
+}
+
+/** Invites store a sha256 hex digest, never the raw token — see sql/003. */
+function fakeTokenHash(): string {
+  return createHash('sha256').update(randomUUID()).digest('hex');
+}
 
 let db: Engine;
 let alice: TestTenant;
@@ -31,6 +50,43 @@ const seeded = new Map<string, { alice: string; bob: string }>();
 /** Insert one row owned by `tenant`, bypassing RLS. Returns its id. */
 async function seedRow(sql: Session, table: string, tenant: TestTenant): Promise<string> {
   if (table === 'tenants') return tenant.id;
+  if (table === 'users') {
+    const [row] = await sql.query<{ id: string }>(
+      'INSERT INTO users (tenant_id, email, display_name) VALUES ($1, $2, $3) RETURNING id',
+      [tenant.id, freshEmail('seed'), `Seed user for ${tenant.slug}`],
+    );
+    return row!.id;
+  }
+  if (table === 'memberships') {
+    // Inserts its own user, the way the jobs fixture inserts its own order, so
+    // the fixtures do not depend on the order EXPECTED_TABLES happens to be in.
+    const [user] = await sql.query<{ id: string }>(
+      'INSERT INTO users (tenant_id, email, display_name) VALUES ($1, $2, $3) RETURNING id',
+      [tenant.id, freshEmail('member'), `Member of ${tenant.slug}`],
+    );
+    const [row] = await sql.query<{ id: string }>(
+      "INSERT INTO memberships (tenant_id, user_id, role) VALUES ($1, $2, 'member') RETURNING id",
+      [tenant.id, user!.id],
+    );
+    return row!.id;
+  }
+  if (table === 'invites') {
+    const [row] = await sql.query<{ id: string }>(
+      `INSERT INTO invites (tenant_id, email, role, token_hash, expires_at)
+       VALUES ($1, $2, 'member', $3, now() + interval '1 day') RETURNING id`,
+      [tenant.id, freshEmail('invited'), fakeTokenHash()],
+    );
+    return row!.id;
+  }
+  if (table === 'entitlements') {
+    const [row] = await sql.query<{ id: string }>(
+      `INSERT INTO entitlements (tenant_id, daily_token_budget, max_concurrent_jobs,
+                                 max_items_per_order, max_item_chars, allowed_models)
+       VALUES ($1, 1000, 1, 10, 100, ARRAY['default']) RETURNING id`,
+      [tenant.id],
+    );
+    return row!.id;
+  }
   if (table === 'work_orders') {
     const [row] = await sql.query<{ id: string }>(
       'INSERT INTO work_orders (tenant_id, item_count) VALUES ($1, 1) RETURNING id',
@@ -60,6 +116,40 @@ async function insertForeignRow(sql: Session, table: string, victim: TestTenant)
       `stolen-${victim.slug}`,
       'stolen',
     ]);
+    return;
+  }
+  if (table === 'users') {
+    await sql.query('INSERT INTO users (tenant_id, email, display_name) VALUES ($1, $2, $3)', [
+      victim.id,
+      freshEmail('stolen'),
+      'stolen',
+    ]);
+    return;
+  }
+  if (table === 'memberships') {
+    // A real user of the victim's tenant, so the composite foreign key is
+    // satisfied and RLS is the only thing left to refuse the row.
+    await sql.query(
+      "INSERT INTO memberships (tenant_id, user_id, role) VALUES ($1, $2, 'owner')",
+      [victim.id, seeded.get('users')!.bob],
+    );
+    return;
+  }
+  if (table === 'invites') {
+    await sql.query(
+      `INSERT INTO invites (tenant_id, email, role, token_hash, expires_at)
+       VALUES ($1, $2, 'owner', $3, now() + interval '1 day')`,
+      [victim.id, freshEmail('stolen'), fakeTokenHash()],
+    );
+    return;
+  }
+  if (table === 'entitlements') {
+    await sql.query(
+      `INSERT INTO entitlements (tenant_id, daily_token_budget, max_concurrent_jobs,
+                                 max_items_per_order, max_item_chars, allowed_models)
+       VALUES ($1, 9999999, 999, 99999, 999999, ARRAY['default'])`,
+      [victim.id],
+    );
     return;
   }
   if (table === 'work_orders') {
@@ -148,6 +238,10 @@ describe.each(EXPECTED_TABLES)('tenant isolation on %s', (table) => {
   /** Per-table SET clause for an UPDATE that is harmless but exercises the path. */
   function setClause(t: string): string {
     if (t === 'tenants') return "slug = 'hacked'";
+    if (t === 'users') return "display_name = 'hacked'";
+    if (t === 'memberships') return "role = 'admin'";
+    if (t === 'invites') return "state = 'revoked'";
+    if (t === 'entitlements') return 'max_concurrent_jobs = 999';
     if (t === 'work_orders') return "state = 'done'";
     if (t === 'jobs') return "state = 'failed'";
     throw new Error(`leak suite has no UPDATE SET clause for "${t}" — add one here`);
