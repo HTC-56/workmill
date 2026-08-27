@@ -6,3 +6,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-27T15:22:12	loop	qwen	commit	83	14796	31	7	118	- [ ] §A7 — Extend `test/leak.test.ts` with the cross-tenant UPDATE and DELETE
 2026-08-27T15:23:49	loop	qwen	commit	83	13816	32	5	96	- [ ] §A8 — Write `README.md`: what workmill is, Phase A status, quickstart,
 2026-08-27T15:26:43	loop	qwen	commit	99	17294	37	7	172	- [ ] §A9 — Write `verify.sh`: typecheck, test, scrub-check, plus a lint that
+2026-08-27T15:28:03	loop	qwen	commit	90	16826	34	8	78	- [ ] §A10 — Close the phase: append a Phase A section to `STATUS.md` and fill
