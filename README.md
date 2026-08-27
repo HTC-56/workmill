@@ -29,7 +29,10 @@ RLS enforcement, catalog-driven leak suite, audited operator access.
 - **Durable job claiming** via `FOR UPDATE SKIP LOCKED` on Postgres, with
   leases and heartbeat.
 
-The rest of the spec (`SPEC.md`) is not built yet.
+**Phase B** — the tenancy core is complete: tenants, users, memberships,
+invites, and entitlements, all under RLS, all covered by the catalog-driven
+leak suite. Entitlement limits are stored but **not yet enforced**; the rest
+of the spec (`SPEC.md`) is not built yet.
 
 ## Quickstart
 
@@ -69,6 +72,7 @@ bash scripts/scrub-check.sh   # public-repo gate — no secrets, no private host
 - `src/db/` — database engine abstraction, migration runner, PGlite and Postgres adapters
 - `src/queue/` — durable job enqueue and claim with `FOR UPDATE SKIP LOCKED`
 - `src/seam/` — `withTenant()` RLS seam and the leak-test catalog
+- `src/tenancy/` — tenant provisioning, invites, memberships, entitlement reads
 - `sql/` — numbered SQL migrations (append-only)
 - `test/` — leak suite, seam tests, claim tests, migration tests
 - `scripts/` — `scrub-check.sh` public-repo gate

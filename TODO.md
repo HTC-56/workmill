@@ -58,7 +58,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it
 - [x] §B9 — Write `test/entitlements.test.ts`: assertions for §B8, including a
       bare tenant with no entitlements row. Pattern file `test/tenancy.test.ts`.
       Gate: typecheck + test + scrub-check.
-- [ ] §B10 — Update `README.md`: Phase B status (tenancy core complete, limits
+- [x] §B10 — Update `README.md`: Phase B status (tenancy core complete, limits
       stored but not enforced) and one Layout line for `src/tenancy/`. Every
       command shown must already work. Gate: `bash verify.sh` green.
 - [ ] §B11 — Close the phase: append a Phase B section to `STATUS.md`, flip
