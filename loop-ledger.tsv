@@ -7,3 +7,5 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-27T15:23:49	loop	qwen	commit	83	13816	32	5	96	- [ ] §A8 — Write `README.md`: what workmill is, Phase A status, quickstart,
 2026-08-27T15:26:43	loop	qwen	commit	99	17294	37	7	172	- [ ] §A9 — Write `verify.sh`: typecheck, test, scrub-check, plus a lint that
 2026-08-27T15:28:03	loop	qwen	commit	90	16826	34	8	78	- [ ] §A10 — Close the phase: append a Phase A section to `STATUS.md` and fill
+2026-08-27T15:44:52	plan	claude	commit	73	154436	38	0	729	plan next phase
+2026-08-27T15:48:18	loop	qwen	commit	58	11899	21	2	212	- [ ] §B4 — Extend `test/leak.test.ts` with one case per table: re-homing a row
