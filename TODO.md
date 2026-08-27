@@ -33,3 +33,34 @@ are the remaining tasks. Grep your section header in TASK_PHASE_A.md and read it
 - [x] §A10 — Close the phase: append a Phase A section to `STATUS.md` and fill
       the `ROADMAP.md` reservations ledger with the four deferrals named in
       §A10. No feature row flips to SHIPPED. Gate: `bash verify.sh` green.
+
+## Phase B: finish the tenancy core — see TASK_PHASE_B.md
+
+§B1–§B3 are already committed (sql/003_identity.sql, src/tenancy/provision.ts,
+src/tenancy/members.ts, plus leak-suite fixtures for the four new tables). These
+are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it.
+
+- [ ] §B4 — Extend `test/leak.test.ts` with one case per table: re-homing a row
+      you own into another tenant is refused by the policy's WITH CHECK half.
+      Keep every existing case. Gate: typecheck + test + scrub-check.
+- [ ] §B5 — Write `test/tenancy.test.ts`: assertions for `provisionTenant` in
+      `src/tenancy/provision.ts` — the four rows, the defaults, the rollback.
+      Pattern file `test/seam.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §B6 — Write `test/members.test.ts`: invite, accept, become a member; the
+      raw token is never stored; a spent token refuses. Pattern file
+      `test/seam.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §B7 — Extend `test/members.test.ts` with expiry, `revokeInvite`,
+      `revokeMembership`, and the one-live-invite-per-address rule. Keep every
+      existing case. Gate: typecheck + test + scrub-check.
+- [ ] §B8 — Write `src/tenancy/entitlements.ts`: a typed read of the current
+      tenant's limits, plus `isModelAllowed`. Read only — no enforcement.
+      Pattern file `src/queue/enqueue.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §B9 — Write `test/entitlements.test.ts`: assertions for §B8, including a
+      bare tenant with no entitlements row. Pattern file `test/tenancy.test.ts`.
+      Gate: typecheck + test + scrub-check.
+- [ ] §B10 — Update `README.md`: Phase B status (tenancy core complete, limits
+      stored but not enforced) and one Layout line for `src/tenancy/`. Every
+      command shown must already work. Gate: `bash verify.sh` green.
+- [ ] §B11 — Close the phase: append a Phase B section to `STATUS.md`, flip
+      `ROADMAP.md` row #1 to SHIPPED, and update the reservations ledger as
+      §B11 describes. Gate: `bash verify.sh` green.
