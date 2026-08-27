@@ -49,7 +49,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it
 - [x] §B6 — Write `test/members.test.ts`: invite, accept, become a member; the
       raw token is never stored; a spent token refuses. Pattern file
       `test/seam.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §B7 — Extend `test/members.test.ts` with expiry, `revokeInvite`,
+- [x] §B7 — Extend `test/members.test.ts` with expiry, `revokeInvite`,
       `revokeMembership`, and the one-live-invite-per-address rule. Keep every
       existing case. Gate: typecheck + test + scrub-check.
 - [ ] §B8 — Write `src/tenancy/entitlements.ts`: a typed read of the current
