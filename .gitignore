@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+*.log
+.loop-paused
+.escalate-rung
+ledger.jsonl
+workmill.yaml
