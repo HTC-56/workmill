@@ -55,7 +55,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it
 - [x] §B8 — Write `src/tenancy/entitlements.ts`: a typed read of the current
       tenant's limits, plus `isModelAllowed`. Read only — no enforcement.
       Pattern file `src/queue/enqueue.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §B9 — Write `test/entitlements.test.ts`: assertions for §B8, including a
+- [x] §B9 — Write `test/entitlements.test.ts`: assertions for §B8, including a
       bare tenant with no entitlements row. Pattern file `test/tenancy.test.ts`.
       Gate: typecheck + test + scrub-check.
 - [ ] §B10 — Update `README.md`: Phase B status (tenancy core complete, limits
