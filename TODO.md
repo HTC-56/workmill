@@ -11,7 +11,7 @@ fully specced in ONE greppable section of its phase doc (`TASK_PHASE_A.md` §A1,
 §A1–§A3 are already committed (db layer, seam + leak suite, queue claim). These
 are the remaining tasks. Grep your section header in TASK_PHASE_A.md and read it.
 
-- [ ] §A4 — Write `scripts/scrub-check.sh`: the public-repo gate. Greps tracked
+- [x] §A4 — Write `scripts/scrub-check.sh`: the public-repo gate. Greps tracked
       files for private hostnames, non-doc IPv4, home paths, key material.
       Exclude the script itself and `pnpm-lock.yaml` or it fails forever.
       Gate: `pnpm typecheck` + `pnpm test` + the script passing on this tree.
