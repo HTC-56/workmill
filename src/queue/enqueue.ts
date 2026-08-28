@@ -9,12 +9,13 @@ import type { Session } from '../db/engine.js';
  * Item and count caps are entitlement-enforced at the data layer in a later
  * phase; this function is the row-writing half only.
  *
- * An order may pin the workflow version it was submitted against (SPEC.md
- * feature 2: every run pins its version). The order carries the pin, not each
- * job: every job in an order runs the same definition, and a requeued job
- * re-runs the version its order pinned rather than whatever the workflow has
- * since become. It is optional for one phase only — the submit path that always
- * supplies it lands with the runner (see ROADMAP.md's reservations ledger).
+ * An order pins the workflow version it was submitted against (SPEC.md feature
+ * 2: every run pins its version). The order carries the pin, not each job:
+ * every job in an order runs the same definition, and a requeued job re-runs
+ * the version its order pinned rather than whatever the workflow has since
+ * become. The pin was optional for exactly one phase; migration 005 makes the
+ * column NOT NULL, so it is a required argument here and a database refusal if
+ * it is somehow missed.
  */
 
 export interface EnqueuedOrder {
@@ -23,22 +24,25 @@ export interface EnqueuedOrder {
 }
 
 export interface EnqueueOptions {
-  /** The `workflow_versions.id` this order runs under. */
-  workflowVersionId?: string;
+  /** The `workflow_versions.id` this order runs under. Required since 005. */
+  workflowVersionId: string;
 }
 
 export async function enqueueOrder(
   sql: Session,
   tenantId: string,
   items: readonly string[],
-  options: EnqueueOptions = {},
+  options: EnqueueOptions,
 ): Promise<EnqueuedOrder> {
   if (items.length === 0) throw new RangeError('a work order needs at least one item');
+  if (!options.workflowVersionId) {
+    throw new RangeError('a work order must pin the workflow version it runs under');
+  }
 
   const [order] = await sql.query<{ id: string }>(
     `INSERT INTO work_orders (tenant_id, item_count, workflow_version_id)
      VALUES ($1, $2, $3) RETURNING id`,
-    [tenantId, items.length, options.workflowVersionId ?? null],
+    [tenantId, items.length, options.workflowVersionId],
   );
   if (!order) throw new Error('work order insert returned no row');
 
