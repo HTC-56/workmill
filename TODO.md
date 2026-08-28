@@ -152,6 +152,6 @@ header in TASK_PHASE_E.md.
       budget enforcement, no HTTP surface) and one Layout line for
       `src/runner/`. Every command shown must already work. Gate:
       `bash verify.sh` green.
-- [ ] §E10 — Close the phase: append a Phase E section to `STATUS.md`, flip
+- [x] §E10 — Close the phase: append a Phase E section to `STATUS.md`, flip
       `ROADMAP.md` row #3 to SHIPPED, and add the four reservations §E10 names.
       Gate: `bash verify.sh` green.

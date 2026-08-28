@@ -47,5 +47,17 @@ validated against a documented subset of JSON Schema and re-asked at most twice;
 invalid-after-re-asks output is a returned failure carrying its errors, raw text and
 token usage, not an exception. Every gateway path is proven against the in-process
 stub and `scripts/live-check.sh` proves the same contract against a real gateway.
-Nothing persists a result or its usage — the job runner and the token ledger are
-not yet built.
+Results and usage are now persisted in `job_results` (Phase E), but nothing
+aggregates or enforces usage — the token ledger is ROADMAP row #5.
+
+## Phase E — the job runner
+
+ROADMAP row #3 is complete: claim, lease, heartbeat, backoff, dead-letter, requeue
+and cancel all hold, and a completion's output and token counts are durable. The
+lifecycle engine tracks attempt counts, retries with exponential backoff, and moves
+jobs to a dead-letter queue after three failures; `cancelOrder` marks an order so
+`runOnce` aborts the next tick. Results and usage are persisted in `job_results`,
+one row per job, with summed token counts across all gateway calls.
+
+Two things are deliberately left: usage is recorded per job but nothing aggregates
+or enforces it, and nothing schedules the runner — there is no server yet.
