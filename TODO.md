@@ -138,10 +138,10 @@ header in TASK_PHASE_E.md.
       `requeueJob`: retry with backoff, dead-letter at three attempts, the
       failure trail. Keep every existing case. Gate: typecheck + test +
       scrub-check.
-- [ ] §E6 — Extend `test/lifecycle.test.ts` with `cancelOrder`,
+- [x] §E6 — Extend `test/lifecycle.test.ts` with `cancelOrder`,
       `markCancelled`, `reapExpiredLeases` and `orderProgress`. Keep every
       existing case. Gate: typecheck + test + scrub-check.
-- [ ] §E7 — Write `test/runner.test.ts`: `runOnce` and `runUntilIdle` against
+- [x] §E7 — Write `test/runner.test.ts`: `runOnce` and `runUntilIdle` against
       the stub gateway — an order end to end, results and usage persisted.
       Pattern file `test/lifecycle.test.ts`. Gate: typecheck + test +
       scrub-check.

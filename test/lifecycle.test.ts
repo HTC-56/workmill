@@ -8,8 +8,12 @@ import {
   cancelOrder,
   failAttempt,
   requeueJob,
+  reapExpiredLeases,
+  markCancelled,
+  orderProgress,
   DEFAULT_MAX_ATTEMPTS,
   JobNotRunningError,
+  OrderNotFoundError,
 } from '../src/queue/lifecycle.js';
 import { enqueueOrder } from '../src/queue/enqueue.js';
 import { withAdmin, withTenant } from '../src/seam/withTenant.js';
@@ -21,6 +25,8 @@ import { freshDb, makeTenant, type TestTenant } from './helpers/db.js';
  *
  * Retry with backoff via `failAttempt`, dead-letter at three attempts, and
  * requeue by verb.  §E5 of TASK_PHASE_E.md.
+ *
+ * Cancel, lease reaping, and order progress.  §E6 of TASK_PHASE_E.md.
  *
  * No stub gateway is needed — nothing here calls a model.
  */
@@ -465,5 +471,257 @@ describe('requeueJob', () => {
       sql.query<{ state: string }>('SELECT state FROM work_orders WHERE tenant_id = $1', [tenant.id]),
     );
     expect(orderStateAfter[0]!.state).toBe('open');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// cancelOrder, markCancelled, reapExpiredLeases, orderProgress — §E6
+// ---------------------------------------------------------------------------
+
+describe('cancelOrder — all pending', () => {
+  it('flips every pending job to cancelled and sets order state to cancelled', async () => {
+    const jobIds = await submit(3);
+
+    // Get the real order_id from the jobs table.
+    const orderIdRows = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ order_id: string }>('SELECT order_id FROM jobs WHERE id = $1', [jobIds[0]]),
+    );
+    const orderId = orderIdRows[0]!.order_id;
+
+    const result = await withTenant(db, tenant.id, (sql) => cancelOrder(sql, orderId));
+
+    // All three jobs are pending, so all get flipped.
+    expect(result.cancelled).toBe(3);
+    expect(result.requested).toBe(0);
+
+    const jobs = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ state: string }>('SELECT state FROM jobs WHERE order_id = $1', [orderId]),
+    );
+    expect(jobs).toHaveLength(3);
+    expect(jobs.every((j) => j.state === 'cancelled')).toBe(true);
+
+    const order = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ state: string }>("SELECT state FROM work_orders WHERE id = $1", [orderId]),
+    );
+    expect(order[0]!.state).toBe('cancelled');
+  });
+});
+
+describe('cancelOrder — one claimed, one pending', () => {
+  it('returns requested:1 for the running job, leaves it running with cancel_requested_at', async () => {
+    const jobIds = await submit(2);
+    const [{ order_id: orderId }] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ order_id: string }>('SELECT order_id FROM jobs WHERE id = $1', [jobIds[0]]),
+    ) as [{ order_id: string }];
+
+    // Claim one — it becomes running.
+    await withTenant(db, tenant.id, (sql) =>
+      claimJobs(sql, { limit: 1, workerId: 'w1', leaseMs: LEASE_MS }),
+    );
+
+    const result = await withTenant(db, tenant.id, (sql) => cancelOrder(sql, orderId));
+    expect(result.cancelled).toBe(1); // the pending one
+    expect(result.requested).toBe(1); // the running one
+
+    // The running job should have cancel_requested_at set.
+    const [runningJob] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ state: string; cancel_requested_at: unknown }>(
+        'SELECT state, cancel_requested_at FROM jobs WHERE order_id = $1 AND state = \'running\'',
+        [orderId],
+      ),
+    );
+    expect(runningJob).toBeDefined();
+    expect(runningJob!.state).toBe('running');
+    expect(runningJob!.cancel_requested_at).not.toBeNull();
+  });
+});
+
+describe('markCancelled', () => {
+  it('on a running job returns true, moves to cancelled, clears lease, appends trail entry', async () => {
+    const jobIds = await submit(2);
+    const [{ order_id: orderId }] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ order_id: string }>('SELECT order_id FROM jobs WHERE id = $1', [jobIds[0]]),
+    ) as [{ order_id: string }];
+
+    // Claim one to make it running.
+    await withTenant(db, tenant.id, (sql) =>
+      claimJobs(sql, { limit: 1, workerId: 'w1', leaseMs: LEASE_MS }),
+    );
+
+    // Cancel the order so the running job gets cancel_requested_at.
+    await withTenant(db, tenant.id, (sql) => cancelOrder(sql, orderId));
+
+    const [runningJob] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string }>('SELECT id FROM jobs WHERE order_id = $1 AND state = \'running\'', [orderId]),
+    );
+
+    const result = await withTenant(db, tenant.id, (sql) => markCancelled(sql, runningJob!.id));
+    expect(result).toBe(true);
+
+    const jobRow = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ state: string; lease_expires_at: unknown }>(
+        'SELECT state, lease_expires_at FROM jobs WHERE id = $1',
+        [runningJob!.id],
+      ),
+    );
+    expect(jobRow[0]!.state).toBe('cancelled');
+    expect(jobRow[0]!.lease_expires_at).toBeNull();
+
+    const trail = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ failure_trail: unknown }>('SELECT failure_trail FROM jobs WHERE id = $1', [runningJob!.id]),
+    );
+    const entries = trail[0]!.failure_trail as Array<{ kind: string }>;
+    expect(entries[entries.length - 1]!.kind).toBe('cancelled');
+  });
+
+  it('on a non-running job returns false', async () => {
+    await submit(1);
+    const jobIds = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string }>('SELECT id FROM jobs WHERE tenant_id = $1', [tenant.id]),
+    );
+    const result = await withTenant(db, tenant.id, (sql) => markCancelled(sql, jobIds[0]!.id));
+    expect(result).toBe(false);
+  });
+});
+
+describe('reapExpiredLeases', () => {
+  it('returns one entry per expired lease and puts each job back to pending', async () => {
+    // Submit 2 jobs, claim both to make them running, then expire both leases.
+    await submit(2);
+
+    // Claim both.
+    await withTenant(db, tenant.id, (sql) =>
+      claimJobs(sql, { limit: 2, workerId: 'w1', leaseMs: LEASE_MS }),
+    );
+
+    // Expire both leases by pushing them into the past.
+    await withTenant(db, tenant.id, (sql) =>
+      sql.query("UPDATE jobs SET lease_expires_at = now() - interval '1 minute' WHERE state = 'running'"),
+    );
+
+    const results = await withTenant(db, tenant.id, (sql) => reapExpiredLeases(sql, () => 0));
+    expect(results).toHaveLength(2);
+    expect(results.every((r) => r.state === 'pending')).toBe(true);
+
+    // Verify jobs are back to pending.
+    const jobs = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ state: string }>("SELECT state FROM jobs WHERE tenant_id = $1 AND state NOT IN ('dead', 'failed')", [tenant.id]),
+    );
+    expect(jobs.every((j) => j.state === 'pending')).toBe(true);
+  });
+
+  it('a running job with a valid lease is untouched', async () => {
+    await submit(2);
+
+    // Claim one, expire only that one's lease.
+    await withTenant(db, tenant.id, (sql) =>
+      claimJobs(sql, { limit: 1, workerId: 'w1', leaseMs: LEASE_MS }),
+    );
+
+    const [expiredJob] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string }>("SELECT id FROM jobs WHERE state = 'running'"),
+    );
+
+    // Expire only the running job's lease.
+    await withTenant(db, tenant.id, (sql) =>
+      sql.query("UPDATE jobs SET lease_expires_at = now() - interval '1 minute' WHERE id = $1", [expiredJob!.id]),
+    );
+
+    await withTenant(db, tenant.id, (sql) => reapExpiredLeases(sql, () => 0));
+
+    // The pending job was never running, so it's untouched.
+    // The expired job was reaped to pending.
+    const jobs = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ state: string }>("SELECT state FROM jobs WHERE tenant_id = $1", [tenant.id]),
+    );
+    // Both should be pending — one was expired/reaped, the other was already pending.
+    expect(jobs.every((j) => j.state === 'pending')).toBe(true);
+  });
+});
+
+describe('orderProgress', () => {
+  it('counts by state and reports the order state on a mixed order', async () => {
+    // Create an order with 3 items: one succeeds, two get cancelled.
+    const jobIds = await submit(3);
+    const [{ order_id: orderId }] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ order_id: string }>('SELECT order_id FROM jobs WHERE id = $1', [jobIds[0]]),
+    ) as [{ order_id: string }];
+
+    // Claim and finish the first job successfully.
+    await withTenant(db, tenant.id, (sql) =>
+      claimJobs(sql, { limit: 1, workerId: 'w1', leaseMs: LEASE_MS }),
+    );
+    const [runningJob] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string }>("SELECT id FROM jobs WHERE order_id = $1 AND state = 'running'", [orderId]),
+    );
+    await withTenant(db, tenant.id, (sql) =>
+      finishJob(sql, runningJob!.id, {
+        ok: true,
+        output: { done: true },
+        raw: '{"done":true}',
+        model: 'default',
+        attempts: 1,
+        usage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
+        latencyMs: 10,
+      }),
+    );
+
+    // Cancel the remaining two (they are pending).
+    await withTenant(db, tenant.id, (sql) => cancelOrder(sql, orderId));
+
+    const progress = await withTenant(db, tenant.id, (sql) => orderProgress(sql, orderId));
+    expect(progress.succeeded).toBe(1);
+    expect(progress.cancelled).toBe(2);
+    expect(progress.total).toBe(3);
+    expect(progress.orderState).toBe('cancelled');
+  });
+
+  it('total equals the number of items submitted', async () => {
+    await submit(4);
+    const jobRows = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string; order_id: string }>("SELECT id, order_id FROM jobs WHERE tenant_id = $1", [tenant.id]),
+    );
+    const orderId = jobRows[0]!.order_id;
+
+    const progress = await withTenant(db, tenant.id, (sql) => orderProgress(sql, orderId));
+    expect(progress.total).toBe(4);
+  });
+});
+
+describe('cancelled order stays cancelled', () => {
+  it('orderState stays cancelled even after the last running item finishes', async () => {
+    // Submit 2 items. Claim both. Cancel the order (both get cancel_requested_at).
+    const jobIds = await submit(2);
+    const [{ order_id: orderId }] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ order_id: string }>('SELECT order_id FROM jobs WHERE id = $1', [jobIds[0]]),
+    ) as [{ order_id: string }];
+
+    // Claim both.
+    await withTenant(db, tenant.id, (sql) =>
+      claimJobs(sql, { limit: 2, workerId: 'w1', leaseMs: LEASE_MS }),
+    );
+
+    // Cancel — both running jobs get cancel_requested_at.
+    await withTenant(db, tenant.id, (sql) => cancelOrder(sql, orderId));
+
+    // Mark both as cancelled via markCancelled.
+    const runningJobs = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string }>("SELECT id FROM jobs WHERE order_id = $1 AND state = 'running'", [orderId]),
+    );
+    for (const { id } of runningJobs) {
+      await withTenant(db, tenant.id, (sql) => markCancelled(sql, id));
+    }
+
+    // Order should be cancelled, not done.
+    const progress = await withTenant(db, tenant.id, (sql) => orderProgress(sql, orderId));
+    expect(progress.orderState).toBe('cancelled');
+  });
+});
+
+describe('orderProgress — missing order', () => {
+  it('throws OrderNotFoundError for a non-existent order', async () => {
+    await expect(
+      withTenant(db, tenant.id, (sql) => orderProgress(sql, '00000000-0000-0000-0000-000000000000')),
+    ).rejects.toThrow(OrderNotFoundError);
   });
 });
