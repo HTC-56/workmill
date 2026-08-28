@@ -74,7 +74,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
 - [x] §C4 — Write `src/workflows/render.ts`: `renderPrompt`, `assertRenderable`,
       `TemplateError`. One substitution, `{{input}}`, and nothing else. Pattern
       file `src/tenancy/entitlements.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §C5 — Write `test/render.test.ts`: assertions for §C4, including the
+- [x] §C5 — Write `test/render.test.ts`: assertions for §C4, including the
       dollar-sign and re-scan traps named there. No database in this file.
       Pattern file `test/entitlements.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §C6 — Write `test/workflows.test.ts`: `createWorkflow`, `listWorkflows`,
