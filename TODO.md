@@ -105,7 +105,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_D.md.
 - [x] §D4 — Write `test/schema.test.ts`: assertions for `validateAgainstSchema`
       and `parseJsonObject` in `src/gateway/schema.ts`. No database, no network.
       Pattern file `test/render.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §D5 — Write `test/gateway.test.ts`: assertions for `src/gateway/client.ts`
+- [x] §D5 — Write `test/gateway.test.ts`: assertions for `src/gateway/client.ts`
       against the stub — usage, timeout, 5xx, malformed body, model map.
       Pattern file `test/render.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §D6 — Write `src/gateway/complete.ts`: `runCompletion`, the re-ask bounded
