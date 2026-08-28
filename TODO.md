@@ -77,7 +77,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
 - [x] §C5 — Write `test/render.test.ts`: assertions for §C4, including the
       dollar-sign and re-scan traps named there. No database in this file.
       Pattern file `test/entitlements.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §C6 — Write `test/workflows.test.ts`: `createWorkflow`, `listWorkflows`,
+- [x] §C6 — Write `test/workflows.test.ts`: `createWorkflow`, `listWorkflows`,
       `getWorkflow` from `src/workflows/store.ts`. Pattern file
       `test/tenancy.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §C7 — Extend `test/workflows.test.ts` with versioning, archiving and the
