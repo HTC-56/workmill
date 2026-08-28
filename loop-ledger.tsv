@@ -32,3 +32,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T09:08:38	loop	qwen	commit	86	21939	37	9	802	- [ ] §D6 — Write `src/gateway/complete.ts`: `runCompletion`, the re-ask bounded
 2026-08-28T09:45:39	loop	qwen	commit	129	104196	49	19	2214	- [ ] §D7 — Write `test/complete.test.ts`: assertions for §D6 — one-attempt
 2026-08-28T09:58:30	loop	qwen	commit	160	109773	62	22	769	- [ ] §D8 — Write `scripts/live-check.sh`: the real-gateway proof, curl only,
+2026-08-28T10:13:32	loop	qwen	commit	30	4726	13	4	895	- [ ] §D9 — Update `README.md`: Phase D status, one Layout line for
