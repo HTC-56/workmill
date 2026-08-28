@@ -49,6 +49,14 @@ export interface CompleteRequest {
   temperature?: number;
   /** Optional max output tokens forwarded to the gateway. */
   maxOutputTokens?: number;
+  /**
+   * Aborts the run from outside — a cancel arriving mid-order. It is handed to
+   * every round's `chatCompletion`, which raises `GatewayAbortedError` before
+   * opening a socket if the signal has already fired, so a cancel that lands
+   * between a re-ask and the next attempt stops there instead of paying for one
+   * more call.
+   */
+  signal?: AbortSignal;
 }
 
 /**
@@ -116,7 +124,8 @@ function reaskUserMessage(problems: string[], attemptNumber: number): string {
  * The conversation grows; it is not rebuilt from scratch.
  *
  * A `GatewayError` from `chatCompletion` is not caught — it propagates.
- * Retrying a 5xx is the job runner's business, not this function's.
+ * Retrying a 5xx is the job runner's business, not this function's, and so is
+ * deciding what an abort means.
  */
 export async function runCompletion(
   config: GatewayConfig,
@@ -140,6 +149,7 @@ export async function runCompletion(
       messages,
       ...(request.temperature !== undefined && { temperature: request.temperature }),
       ...(request.maxOutputTokens !== undefined && { maxOutputTokens: request.maxOutputTokens }),
+      ...(request.signal !== undefined && { signal: request.signal }),
     });
 
     totalUsage = addUsage(totalUsage, response.usage);

@@ -50,6 +50,14 @@ export interface CompletionRequest {
   messages: readonly ChatMessage[];
   temperature?: number;
   maxOutputTokens?: number;
+  /**
+   * Aborts the call from outside. SPEC.md feature 3 requires cancelling a
+   * RUNNING job to abort the in-flight model call rather than wait for it, and
+   * this is the only way that reaches the socket. Aborting raises
+   * `GatewayAbortedError`, which is deliberately NOT a timeout: one is a
+   * decision someone made and the other is the gateway failing to answer.
+   */
+  signal?: AbortSignal;
 }
 
 export interface TokenUsage {
@@ -81,6 +89,14 @@ export class GatewayTimeoutError extends GatewayError {
   constructor(public readonly timeoutMs: number) {
     super(`gateway did not answer within ${timeoutMs}ms`);
     this.name = 'GatewayTimeoutError';
+  }
+}
+
+/** The caller's `signal` fired: someone cancelled the work, mid-call. */
+export class GatewayAbortedError extends GatewayError {
+  constructor() {
+    super('gateway request was aborted by the caller');
+    this.name = 'GatewayAbortedError';
   }
 }
 
@@ -228,8 +244,22 @@ export async function chatCompletion(
   const headers: Record<string, string> = { 'content-type': 'application/json' };
   if (config.apiKey !== undefined) headers['authorization'] = `Bearer ${config.apiKey}`;
 
+  // Already cancelled before we started: do not open a socket at all.
+  if (request.signal?.aborted === true) throw new GatewayAbortedError();
+
+  // One controller drives the socket; two things can trip it, and which one did
+  // decides which error the caller sees.
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), config.timeoutMs);
+  // A flag, not a re-read of `signal.aborted`, because which of the two
+  // tripwires fired decides which error the caller sees — and only the caller's
+  // own signal produces an abort rather than a timeout.
+  let abortedByCaller = false;
+  const relayAbort = (): void => {
+    abortedByCaller = true;
+    controller.abort();
+  };
+  request.signal?.addEventListener('abort', relayAbort, { once: true });
   const startedAt = Date.now();
 
   let response: Response;
@@ -241,10 +271,12 @@ export async function chatCompletion(
       signal: controller.signal,
     });
   } catch (error) {
+    if (abortedByCaller) throw new GatewayAbortedError();
     if (controller.signal.aborted) throw new GatewayTimeoutError(config.timeoutMs);
     throw new GatewayError(`gateway request failed: ${String(error)}`, { cause: error });
   } finally {
     clearTimeout(timer);
+    request.signal?.removeEventListener('abort', relayAbort);
   }
 
   const text = await response.text();
