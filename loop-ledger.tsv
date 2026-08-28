@@ -29,3 +29,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T08:35:49	loop	qwen	commit	36	8695	14	3	599	- [ ] §D4 — Write `test/schema.test.ts`: assertions for `validateAgainstSchema`
 2026-08-28T08:42:44	loop	qwen	no-op	62	15905	24	5	414	- [ ] §D5 — Write `test/gateway.test.ts`: assertions for `src/gateway/client.ts`
 2026-08-28T08:55:15	loop	qwen	commit	72	22133	30	7	751	- [ ] §D5 — Write `test/gateway.test.ts`: assertions for `src/gateway/client.ts`
+2026-08-28T09:08:38	loop	qwen	commit	86	21939	37	9	802	- [ ] §D6 — Write `src/gateway/complete.ts`: `runCompletion`, the re-ask bounded
