@@ -19,3 +19,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T07:16:31	plan	claude	commit	55	100180	31	0	512	plan next phase
 2026-08-28T07:24:34	loop	qwen	commit	30	3883	13	2	419	- [ ] §C4 — Write `src/workflows/render.ts`: `renderPrompt`, `assertRenderable`,
 2026-08-28T07:30:37	loop	qwen	commit	57	7908	24	4	362	- [ ] §C5 — Write `test/render.test.ts`: assertions for §C4, including the
+2026-08-28T07:43:52	loop	qwen	commit	76	18657	30	6	793	- [ ] §C6 — Write `test/workflows.test.ts`: `createWorkflow`, `listWorkflows`,
