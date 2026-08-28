@@ -71,7 +71,7 @@ are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it
 the leak fixtures for the two new tables, and the version pin on `enqueueOrder`).
 These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
 
-- [ ] §C4 — Write `src/workflows/render.ts`: `renderPrompt`, `assertRenderable`,
+- [x] §C4 — Write `src/workflows/render.ts`: `renderPrompt`, `assertRenderable`,
       `TemplateError`. One substitution, `{{input}}`, and nothing else. Pattern
       file `src/tenancy/entitlements.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §C5 — Write `test/render.test.ts`: assertions for §C4, including the
