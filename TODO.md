@@ -148,7 +148,7 @@ header in TASK_PHASE_E.md.
 - [x] §E8 — Extend `test/runner.test.ts` with the failure paths: 5xx retried
       then dead, schema-invalid recorded as failed, cancel aborting a running
       job. Keep every existing case. Gate: typecheck + test + scrub-check.
-- [ ] §E9 — Update `README.md`: Phase E status (orders run end to end; no
+- [x] §E9 — Update `README.md`: Phase E status (orders run end to end; no
       budget enforcement, no HTTP surface) and one Layout line for
       `src/runner/`. Every command shown must already work. Gate:
       `bash verify.sh` green.

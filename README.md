@@ -52,6 +52,14 @@ failure, not a thrown error; token usage is read off every response.
 Nothing stores those results or that usage yet — the job runner and the
 token ledger are not built, so no work order runs end to end.
 
+**Phase E** — work orders now run end to end. Leases are renewed by a
+heartbeat, a transport failure is retried with exponential backoff and
+jitter and dead-letters after three attempts, a dead job is requeued by
+verb, and cancelling an order aborts the in-flight model call. Results
+and their token counts are durable in `job_results`. Nothing enforces a
+budget or a concurrency cap yet (that is the metering phase), and there
+is no HTTP surface — no server, no dashboard.
+
 ## Quickstart
 
 ```bash
@@ -94,6 +102,7 @@ bash scripts/live-check.sh    # real-gateway proof — needs a real gateway and 
 - `src/tenancy/` — tenant provisioning, invites, memberships, entitlement reads
 - `src/workflows/` — workflow definitions, versioning, the `{{input}}` renderer, three example workflows
 - `src/gateway/` — the OpenAI-compatible client, the JSON Schema subset validator, the bounded re-ask
+- `src/runner/run.ts` — the tick: claim, call the gateway, record results and usage
 - `sql/` — numbered SQL migrations (append-only)
 - `test/` — leak suite, seam tests, claim tests, migration tests
 - `scripts/` — `scrub-check.sh` public-repo gate
