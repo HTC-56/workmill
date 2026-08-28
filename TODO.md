@@ -95,3 +95,31 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
 - [x] §C11 — Close the phase: append a Phase C section to `STATUS.md`, flip
       `ROADMAP.md` row #2 to SHIPPED, and add the two reservations §C11 names.
       Gate: `bash verify.sh` green.
+
+## Phase D: model calls through the gateway — see TASK_PHASE_D.md
+
+§D1–§D3 are already committed (`src/gateway/client.ts`, `src/gateway/schema.ts`,
+and `test/helpers/stub-gateway.ts` — the in-process OpenAI-compatible stub).
+These are the remaining tasks. Grep your section header in TASK_PHASE_D.md.
+
+- [ ] §D4 — Write `test/schema.test.ts`: assertions for `validateAgainstSchema`
+      and `parseJsonObject` in `src/gateway/schema.ts`. No database, no network.
+      Pattern file `test/render.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §D5 — Write `test/gateway.test.ts`: assertions for `src/gateway/client.ts`
+      against the stub — usage, timeout, 5xx, malformed body, model map.
+      Pattern file `test/render.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §D6 — Write `src/gateway/complete.ts`: `runCompletion`, the re-ask bounded
+      at `MAX_REASKS = 2`. A bad answer is a returned result, never a throw.
+      Pattern file `src/workflows/render.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §D7 — Write `test/complete.test.ts`: assertions for §D6 — one-attempt
+      success, re-ask then success, three failures bounded, summed usage.
+      Pattern file `test/gateway.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §D8 — Write `scripts/live-check.sh`: the real-gateway proof, curl only,
+      three checks (models, completion, usage). Not run by CI or verify.sh.
+      Pattern file `scripts/scrub-check.sh`. Gate: typecheck + test + scrub-check.
+- [ ] §D9 — Update `README.md`: Phase D status, one Layout line for
+      `src/gateway/`, and `bash scripts/live-check.sh` under Gates. Every
+      command shown must already work. Gate: `bash verify.sh` green.
+- [ ] §D10 — Close the phase: append a Phase D section to `STATUS.md`, flip
+      `ROADMAP.md` row #4 to SHIPPED, and add the three reservations §D10 names.
+      Gate: `bash verify.sh` green.
