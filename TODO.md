@@ -89,7 +89,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
 - [x] §C9 — Write `test/examples.test.ts`: assertions for §C8, including that
       every example passes `assertValidDefinition` and `assertRenderable`.
       Pattern file `test/workflows.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §C10 — Update `README.md`: Phase C status (workflows are versioned tenant
+- [x] §C10 — Update `README.md`: Phase C status (workflows are versioned tenant
       data; nothing runs them yet) and one Layout line for `src/workflows/`.
       Every command shown must already work. Gate: `bash verify.sh` green.
 - [ ] §C11 — Close the phase: append a Phase C section to `STATUS.md`, flip

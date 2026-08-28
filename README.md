@@ -34,6 +34,15 @@ invites, and entitlements, all under RLS, all covered by the catalog-driven
 leak suite. Entitlement limits are stored but **not yet enforced**; the rest
 of the spec (`SPEC.md`) is not built yet.
 
+**Phase C** — workflows are tenant data: a prompt template with
+`{{input}}`, a JSON output schema, a logical model name, temperature and
+max output tokens, all under RLS and all covered by the leak suite. Edits
+append a version instead of rewriting one, and a work order pins the
+version it was submitted against. Three example workflows ship — extract,
+classify, summarize — but **nothing runs them yet**. The gateway and the
+job runner are not built, so a stored output schema is not yet validated
+against any model output.
+
 ## Quickstart
 
 ```bash
@@ -73,6 +82,7 @@ bash scripts/scrub-check.sh   # public-repo gate — no secrets, no private host
 - `src/queue/` — durable job enqueue and claim with `FOR UPDATE SKIP LOCKED`
 - `src/seam/` — `withTenant()` RLS seam and the leak-test catalog
 - `src/tenancy/` — tenant provisioning, invites, memberships, entitlement reads
+- `src/workflows/` — workflow definitions, versioning, the `{{input}}` renderer, three example workflows
 - `sql/` — numbered SQL migrations (append-only)
 - `test/` — leak suite, seam tests, claim tests, migration tests
 - `scripts/` — `scrub-check.sh` public-repo gate
