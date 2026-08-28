@@ -21,3 +21,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T07:30:37	loop	qwen	commit	57	7908	24	4	362	- [ ] §C5 — Write `test/render.test.ts`: assertions for §C4, including the
 2026-08-28T07:43:52	loop	qwen	commit	76	18657	30	6	793	- [ ] §C6 — Write `test/workflows.test.ts`: `createWorkflow`, `listWorkflows`,
 2026-08-28T07:56:41	loop	qwen	commit	102	24838	39	9	768	- [ ] §C7 — Extend `test/workflows.test.ts` with versioning, archiving and the
+2026-08-28T08:04:45	loop	qwen	commit	88	14414	33	7	483	- [ ] §C8 — Write `src/workflows/examples.ts`: the three seeded workflows
