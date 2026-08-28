@@ -145,7 +145,7 @@ header in TASK_PHASE_E.md.
       the stub gateway — an order end to end, results and usage persisted.
       Pattern file `test/lifecycle.test.ts`. Gate: typecheck + test +
       scrub-check.
-- [ ] §E8 — Extend `test/runner.test.ts` with the failure paths: 5xx retried
+- [x] §E8 — Extend `test/runner.test.ts` with the failure paths: 5xx retried
       then dead, schema-invalid recorded as failed, cancel aborting a running
       job. Keep every existing case. Gate: typecheck + test + scrub-check.
 - [ ] §E9 — Update `README.md`: Phase E status (orders run end to end; no

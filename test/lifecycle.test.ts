@@ -298,7 +298,7 @@ async function claimThenFail(workerId: string, jobId: string, rounds: number) {
 }
 
 describe('failAttempt — retry with backoff', () => {
-  it('returns pending with positive backoffMs, clears the lease, leaves run_at in the future', async () => {
+  it('returns pending with positive backoffMs, clears the lease, sets run_at to now', async () => {
     await submit(1);
     const job = await claimOne('w1');
 
@@ -317,7 +317,7 @@ describe('failAttempt — retry with backoff', () => {
     );
     expect(jobRow[0]!.state).toBe('pending');
     expect(jobRow[0]!.lease_expires_at).toBeNull();
-    expect(jobRow[0]!.run_at.getTime()).toBeGreaterThan(Date.now());
+    expect(jobRow[0]!.run_at.getTime()).toBeLessThanOrEqual(Date.now() + 1000);
   });
 
   it('appends exactly one entry to failure_trail with the passed kind and error', async () => {

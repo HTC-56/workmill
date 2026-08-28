@@ -322,7 +322,7 @@ describe('cancel aborts a running job', () => {
       sql.query<{ id: string }>('SELECT id FROM jobs WHERE tenant_id = $1', [tenant.id]),
     );
     const orderIdRow = await withTenant(db, tenant.id, (sql) =>
-      sql.query<{ order_id: string }>('SELECT order_id FROM jobs WHERE id = $1', [firstJob[0]!.id]),
+      sql.query<{ order_id: string }>('SELECT order_id FROM jobs WHERE id = $1', [firstJob!.id]),
     );
     const orderId = orderIdRow[0]!.order_id;
 

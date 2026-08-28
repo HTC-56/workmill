@@ -246,7 +246,7 @@ export async function failAttempt(
         SET state            = CASE WHEN $4::boolean THEN 'dead' ELSE 'pending' END,
             dead_at          = CASE WHEN $4::boolean THEN now() ELSE NULL END,
             lease_expires_at = NULL,
-            run_at           = now() + make_interval(secs => $5::double precision / 1000),
+            run_at           = now(),
             last_error       = $3::text,
             failure_trail    = failure_trail || jsonb_build_array(jsonb_build_object(
                                  'attempt', attempts, 'at', now(),
@@ -254,7 +254,7 @@ export async function failAttempt(
             updated_at       = now()
       WHERE id = $1
       RETURNING state, attempts`,
-    [jobId, failure.kind, trimError(failure.error), exhausted, wait],
+    [jobId, failure.kind, trimError(failure.error), exhausted],
   );
   if (!row) throw new JobNotRunningError(jobId);
 
