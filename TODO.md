@@ -108,7 +108,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_D.md.
 - [x] §D5 — Write `test/gateway.test.ts`: assertions for `src/gateway/client.ts`
       against the stub — usage, timeout, 5xx, malformed body, model map.
       Pattern file `test/render.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §D6 — Write `src/gateway/complete.ts`: `runCompletion`, the re-ask bounded
+- [x] §D6 — Write `src/gateway/complete.ts`: `runCompletion`, the re-ask bounded
       at `MAX_REASKS = 2`. A bad answer is a returned result, never a throw.
       Pattern file `src/workflows/render.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §D7 — Write `test/complete.test.ts`: assertions for §D6 — one-attempt
