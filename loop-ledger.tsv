@@ -38,3 +38,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T11:12:10	loop	qwen	commit	74	27136	29	8	1444	- [ ] §E4 — Write `test/lifecycle.test.ts`: `backoffMs`, `heartbeat` and
 2026-08-28T11:49:35	loop	qwen	commit	122	105202	47	13	2244	- [ ] §E5 — Extend `test/lifecycle.test.ts` with `failAttempt` and
 2026-08-28T13:20:02	loop	qwen	max-turns	281	128181	108	38	5425	- [ ] §E6 — Extend `test/lifecycle.test.ts` with `cancelOrder`,
+2026-08-28T14:00:15	loop	qwen	commit	324	156401	123	40	2411	- [ ] §E8 — Extend `test/runner.test.ts` with the failure paths: 5xx retried
