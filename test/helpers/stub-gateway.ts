@@ -25,6 +25,13 @@ export type StubBehavior =
       completionTokens?: number;
       finishReason?: string;
     }
+  /** 200 with valid JSON response but non-JSON content string. */
+  | {
+      kind: 'contentRaw';
+      content: string;
+      promptTokens?: number;
+      completionTokens?: number;
+    }
   /** A non-2xx status with an arbitrary body. */
   | { kind: 'status'; status: number; body?: string }
   /** 200 whose body is not JSON at all. */
@@ -107,6 +114,19 @@ export async function startStubGateway(): Promise<StubGateway> {
       case 'status':
         send(res, behavior.status, behavior.body ?? 'stub failure', false);
         return;
+      case 'contentRaw': {
+        const promptTokens = behavior.promptTokens ?? 11;
+        const completionTokens = behavior.completionTokens ?? 7;
+        send(res, 200, JSON.stringify({
+          id: 'chatcmpl-stub',
+          object: 'chat.completion',
+          created: 1_700_000_000,
+          model: 'stub-model',
+          choices: [{ index: 0, message: { role: 'assistant', content: behavior.content }, finish_reason: 'stop' }],
+          usage: { prompt_tokens: promptTokens, completion_tokens: completionTokens, total_tokens: promptTokens + completionTokens },
+        }));
+        return;
+      }
       case 'malformed':
         send(res, 200, 'not json at all', false);
         return;

@@ -111,7 +111,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_D.md.
 - [x] §D6 — Write `src/gateway/complete.ts`: `runCompletion`, the re-ask bounded
       at `MAX_REASKS = 2`. A bad answer is a returned result, never a throw.
       Pattern file `src/workflows/render.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §D7 — Write `test/complete.test.ts`: assertions for §D6 — one-attempt
+- [x] §D7 — Write `test/complete.test.ts`: assertions for §D6 — one-attempt
       success, re-ask then success, three failures bounded, summed usage.
       Pattern file `test/gateway.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §D8 — Write `scripts/live-check.sh`: the real-gateway proof, curl only,
