@@ -131,7 +131,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_D.md.
 below writes tests or docs — none needs new `src/` code. Grep your section
 header in TASK_PHASE_E.md.
 
-- [ ] §E4 — Write `test/lifecycle.test.ts`: `backoffMs`, `heartbeat` and
+- [x] §E4 — Write `test/lifecycle.test.ts`: `backoffMs`, `heartbeat` and
       `finishJob` from `src/queue/lifecycle.ts`. Pattern file
       `test/claim.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §E5 — Extend `test/lifecycle.test.ts` with `failAttempt` and
