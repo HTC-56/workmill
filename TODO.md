@@ -80,7 +80,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
 - [x] §C6 — Write `test/workflows.test.ts`: `createWorkflow`, `listWorkflows`,
       `getWorkflow` from `src/workflows/store.ts`. Pattern file
       `test/tenancy.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §C7 — Extend `test/workflows.test.ts` with versioning, archiving and the
+- [x] §C7 — Extend `test/workflows.test.ts` with versioning, archiving and the
       order's version pin. Keep every existing case. Gate: typecheck + test +
       scrub-check.
 - [ ] §C8 — Write `src/workflows/examples.ts`: the three seeded workflows
