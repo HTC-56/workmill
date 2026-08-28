@@ -25,3 +25,5 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T08:07:52	loop	qwen	commit	87	12442	34	7	186	- [ ] §C9 — Write `test/examples.test.ts`: assertions for §C8, including that
 2026-08-28T08:09:15	loop	qwen	commit	83	11545	33	8	82	- [ ] §C10 — Update `README.md`: Phase C status (workflows are versioned tenant
 2026-08-28T08:11:11	loop	qwen	commit	72	8942	27	7	115	- [ ] §C11 — Close the phase: append a Phase C section to `STATUS.md`, flip
+2026-08-28T08:26:11	plan	claude	commit	44	94938	22	0	489	plan next phase
+2026-08-28T08:35:49	loop	qwen	commit	36	8695	14	3	599	- [ ] §D4 — Write `test/schema.test.ts`: assertions for `validateAgainstSchema`
