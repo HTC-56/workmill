@@ -6,8 +6,8 @@ are the one permitted exception to append-only docs.
 | # | Feature (SPEC.md) | Status | Phase | Note |
 |---|---|---|---|---|
 | 1 | Tenancy core under RLS + leak-test suite | SHIPPED | A, B | five nouns built and leak suite covers every one of them |
-| 2 | Workflows as tenant data (template + schema + model, versioned) | NOT BUILT | — | |
-| 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | PARTIAL | A | orders, jobs and the SKIP LOCKED claim proven inside the tenant boundary; leases, retries, DLQ, cancel deferred |
+| 2 | Workflows as tenant data (template + schema + model, versioned) | PARTIAL | C | tables, store and the order pin committed; tests, examples and docs in flight |
+| 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | PARTIAL | A | orders, jobs and the SKIP LOCKED claim proven inside the tenant boundary; orders carry the workflow-version pin (C); leases, retries, DLQ, cancel deferred |
 | 4 | Model calls through the gateway (schema validation, bounded re-ask, usage capture) | NOT BUILT | — | stub server in CI |
 | 5 | Metering + entitlements at the data layer | NOT BUILT | — | |
 | 6 | Tenant dashboard (self-contained page) | NOT BUILT | — | hero screenshot |

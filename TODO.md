@@ -64,3 +64,34 @@ are the remaining tasks. Grep your section header in TASK_PHASE_B.md and read it
 - [x] §B11 — Close the phase: append a Phase B section to `STATUS.md`, flip
       `ROADMAP.md` row #1 to SHIPPED, and update the reservations ledger as
       §B11 describes. Gate: `bash verify.sh` green.
+
+## Phase C: workflows as tenant data — see TASK_PHASE_C.md
+
+§C1–§C3 are already committed (sql/004_workflows.sql, src/workflows/store.ts,
+the leak fixtures for the two new tables, and the version pin on `enqueueOrder`).
+These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
+
+- [ ] §C4 — Write `src/workflows/render.ts`: `renderPrompt`, `assertRenderable`,
+      `TemplateError`. One substitution, `{{input}}`, and nothing else. Pattern
+      file `src/tenancy/entitlements.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §C5 — Write `test/render.test.ts`: assertions for §C4, including the
+      dollar-sign and re-scan traps named there. No database in this file.
+      Pattern file `test/entitlements.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §C6 — Write `test/workflows.test.ts`: `createWorkflow`, `listWorkflows`,
+      `getWorkflow` from `src/workflows/store.ts`. Pattern file
+      `test/tenancy.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §C7 — Extend `test/workflows.test.ts` with versioning, archiving and the
+      order's version pin. Keep every existing case. Gate: typecheck + test +
+      scrub-check.
+- [ ] §C8 — Write `src/workflows/examples.ts`: the three seeded workflows
+      (extract, classify, summarize) plus `seedExampleWorkflows`. Pattern file
+      `src/tenancy/provision.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §C9 — Write `test/examples.test.ts`: assertions for §C8, including that
+      every example passes `assertValidDefinition` and `assertRenderable`.
+      Pattern file `test/workflows.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §C10 — Update `README.md`: Phase C status (workflows are versioned tenant
+      data; nothing runs them yet) and one Layout line for `src/workflows/`.
+      Every command shown must already work. Gate: `bash verify.sh` green.
+- [ ] §C11 — Close the phase: append a Phase C section to `STATUS.md`, flip
+      `ROADMAP.md` row #2 to SHIPPED, and add the two reservations §C11 names.
+      Gate: `bash verify.sh` green.
