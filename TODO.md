@@ -114,7 +114,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_D.md.
 - [x] §D7 — Write `test/complete.test.ts`: assertions for §D6 — one-attempt
       success, re-ask then success, three failures bounded, summed usage.
       Pattern file `test/gateway.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §D8 — Write `scripts/live-check.sh`: the real-gateway proof, curl only,
+- [x] §D8 — Write `scripts/live-check.sh`: the real-gateway proof, curl only,
       three checks (models, completion, usage). Not run by CI or verify.sh.
       Pattern file `scripts/scrub-check.sh`. Gate: typecheck + test + scrub-check.
 - [ ] §D9 — Update `README.md`: Phase D status, one Layout line for
