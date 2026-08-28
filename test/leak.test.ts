@@ -28,12 +28,23 @@ const EXPECTED_TABLES = [
   'entitlements',
   'work_orders',
   'jobs',
+  'workflows',
+  'workflow_versions',
 ] as const;
 
 /** A unique address per fixture row; the users index is unique per tenant. */
 function freshEmail(prefix: string): string {
   return `${prefix}-${randomUUID().slice(0, 8)}@example.test`;
 }
+
+/** A unique per-tenant workflow handle; sql/004 requires 3..40 chars, lowercase. */
+function freshSlug(prefix: string): string {
+  return `${prefix}-${randomUUID().slice(0, 8)}`;
+}
+
+/** The minimum definition sql/004 accepts: the template must carry {{input}}. */
+const FIXTURE_TEMPLATE = 'Summarise this: {{input}}';
+const FIXTURE_SCHEMA = JSON.stringify({ type: 'object', properties: { brief: { type: 'string' } } });
 
 /** Invites store a sha256 hex digest, never the raw token — see sql/003. */
 function fakeTokenHash(): string {
@@ -105,6 +116,27 @@ async function seedRow(sql: Session, table: string, tenant: TestTenant): Promise
     );
     return job!.id;
   }
+  if (table === 'workflows') {
+    const [row] = await sql.query<{ id: string }>(
+      'INSERT INTO workflows (tenant_id, slug, name) VALUES ($1, $2, $3) RETURNING id',
+      [tenant.id, freshSlug('wf'), `Workflow for ${tenant.slug}`],
+    );
+    return row!.id;
+  }
+  if (table === 'workflow_versions') {
+    // Inserts its own workflow, the way the jobs fixture inserts its own order.
+    const [workflow] = await sql.query<{ id: string }>(
+      'INSERT INTO workflows (tenant_id, slug, name) VALUES ($1, $2, $3) RETURNING id',
+      [tenant.id, freshSlug('ver'), `Versioned workflow for ${tenant.slug}`],
+    );
+    const [row] = await sql.query<{ id: string }>(
+      `INSERT INTO workflow_versions
+         (tenant_id, workflow_id, version, prompt_template, output_schema, model)
+       VALUES ($1, $2, 1, $3, $4::jsonb, 'default') RETURNING id`,
+      [tenant.id, workflow!.id, FIXTURE_TEMPLATE, FIXTURE_SCHEMA],
+    );
+    return row!.id;
+  }
   throw new Error(`leak suite has no fixture for tenant-scoped table "${table}" — add one here`);
 }
 
@@ -162,6 +194,25 @@ async function insertForeignRow(sql: Session, table: string, victim: TestTenant)
       seeded.get('work_orders')!.bob,
       'stolen',
     ]);
+    return;
+  }
+  if (table === 'workflows') {
+    await sql.query('INSERT INTO workflows (tenant_id, slug, name) VALUES ($1, $2, $3)', [
+      victim.id,
+      freshSlug('stolen'),
+      'stolen',
+    ]);
+    return;
+  }
+  if (table === 'workflow_versions') {
+    // A real workflow of the victim's, so the composite foreign key is
+    // satisfied and RLS is the only thing left to refuse the row.
+    await sql.query(
+      `INSERT INTO workflow_versions
+         (tenant_id, workflow_id, version, prompt_template, output_schema, model)
+       VALUES ($1, $2, 999, $3, $4::jsonb, 'default')`,
+      [victim.id, seeded.get('workflows')!.bob, FIXTURE_TEMPLATE, FIXTURE_SCHEMA],
+    );
     return;
   }
   throw new Error(`leak suite has no foreign-insert case for "${table}" — add one here`);
@@ -244,6 +295,8 @@ describe.each(EXPECTED_TABLES)('tenant isolation on %s', (table) => {
     if (t === 'entitlements') return 'max_concurrent_jobs = 999';
     if (t === 'work_orders') return "state = 'done'";
     if (t === 'jobs') return "state = 'failed'";
+    if (t === 'workflows') return "name = 'hacked'";
+    if (t === 'workflow_versions') return "model = 'hacked'";
     throw new Error(`leak suite has no UPDATE SET clause for "${t}" — add one here`);
   }
 
