@@ -110,11 +110,12 @@ by reading it.
   The runner's heartbeat is the second kind, so it would have been rejected at
   random depending on timing. `src/db/pglite.ts` now uses `AsyncLocalStorage`, so
   the flag is set only inside the callback's own async context.
-- **A cancel of a running job aborts a real socket, on PGlite, in-process.** With
-  the stub answering after 3000ms and a 60ms heartbeat, the runner aborts and
-  records the cancellation in roughly 300ms. SPEC.md feature 3's "RUNNING aborts
-  the in-flight model call and records that it did" is therefore proven on the
-  zero-setup engine, not deferred to a real server.
+- **A cancel of a running job aborts a real socket, on PGlite, in-process.**
+  Measured while preparing this phase, against the stub: answering after 3000ms
+  with a 60ms heartbeat, the runner aborted and recorded the cancellation in
+  roughly 300ms. So SPEC.md feature 3's "RUNNING aborts the in-flight model call
+  and records that it did" is expressible on the zero-setup engine and needs no
+  real server — §E8 is the task that commits the assertion.
 - **`jsonb_build_object` will not infer a parameter's type.** An untyped `$n`
   inside it is `unknown` to the planner and the statement is refused with "could
   not determine data type", even when the same parameter is used elsewhere in the
