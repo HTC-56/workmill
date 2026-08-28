@@ -134,7 +134,7 @@ header in TASK_PHASE_E.md.
 - [x] §E4 — Write `test/lifecycle.test.ts`: `backoffMs`, `heartbeat` and
       `finishJob` from `src/queue/lifecycle.ts`. Pattern file
       `test/claim.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §E5 — Extend `test/lifecycle.test.ts` with `failAttempt` and
+- [x] §E5 — Extend `test/lifecycle.test.ts` with `failAttempt` and
       `requeueJob`: retry with backoff, dead-letter at three attempts, the
       failure trail. Keep every existing case. Gate: typecheck + test +
       scrub-check.
