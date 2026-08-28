@@ -36,3 +36,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T10:24:59	loop	qwen	commit	32	5643	13	4	680	- [ ] §D10 — Close the phase: append a Phase D section to `STATUS.md`, flip
 2026-08-28T10:48:53	plan	claude	commit	112	170134	62	6	1030	plan next phase
 2026-08-28T11:12:10	loop	qwen	commit	74	27136	29	8	1444	- [ ] §E4 — Write `test/lifecycle.test.ts`: `backoffMs`, `heartbeat` and
+2026-08-28T11:49:35	loop	qwen	commit	122	105202	47	13	2244	- [ ] §E5 — Extend `test/lifecycle.test.ts` with `failAttempt` and
