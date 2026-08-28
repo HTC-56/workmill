@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Engine } from '../src/db/engine.js';
-import { runOnce, runUntilIdle } from '../src/runner/run.js';
+import { runOnce, runUntilIdle, cancelOrderNow } from '../src/runner/run.js';
 import { orderProgress } from '../src/queue/lifecycle.js';
 import { enqueueOrder } from '../src/queue/enqueue.js';
 import { withAdmin, withTenant } from '../src/seam/withTenant.js';
@@ -192,4 +192,152 @@ describe('runOnce — prompt reaches the model', () => {
     expect(userMessages.some((msg) => msg.includes('item 0'))).toBe(true);
     expect(userMessages.some((msg) => msg.includes('item 1'))).toBe(true);
   });
+});
+
+// ---------------------------------------------------------------------------
+// §E8 — the failure paths
+// ---------------------------------------------------------------------------
+
+describe('5xx transport failure — retried then dead', () => {
+  it('one runOnce with 503 stub reports retried:1, job back to pending', async () => {
+    stub.queue({ kind: 'status', status: 503 });
+    await submit(1);
+
+    const summary = await runOnce(db, tenant.id, gatewayConfig(), runnerOpts({ random: () => 0 }));
+    expect(summary.retried).toBe(1);
+    expect(summary.succeeded).toBe(0);
+    expect(summary.dead).toBe(0);
+
+    // Job should be back in pending.
+    const [job] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ state: string }>('SELECT state FROM jobs WHERE tenant_id = $1', [tenant.id]),
+    );
+    expect(job!.state).toBe('pending');
+  });
+
+  it('three 503 rounds put the job dead, summary dead:1, no job_results row', async () => {
+    // Queue three 503s — one per runOnce tick.
+    stub.queue({ kind: 'status', status: 503 }, { kind: 'status', status: 503 }, { kind: 'status', status: 503 });
+    await submit(1);
+
+    // Each runOnce claims the one job, gets 503 → pending, then stops (no more jobs).
+    // After 3 runs the job should be dead.
+    let summary: Awaited<ReturnType<typeof runOnce>>;
+    for (let i = 0; i < 3; i++) {
+      summary = await runOnce(db, tenant.id, gatewayConfig(), runnerOpts({ random: () => 0 }));
+    }
+    expect(summary!.dead).toBe(1);
+
+    // No job_results row — the model never answered.
+    const results = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string }>('SELECT id FROM job_results WHERE tenant_id = $1', [tenant.id]),
+    );
+    expect(results).toHaveLength(0);
+  });
+});
+
+describe('schema-invalid — bounded re-ask, job_results recorded', () => {
+  it('runOnce reports failed:1, job is failed, job_results has ok:false and attempts:3', async () => {
+    // The stub always answers with content that misses the output schema.
+    stub.setDefault({ kind: 'content', content: '{"wrong":1}' });
+    await submit(1);
+
+    const summary = await runOnce(db, tenant.id, gatewayConfig(), runnerOpts());
+    expect(summary.failed).toBe(1);
+
+    const jobRow = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ state: string }>('SELECT state FROM jobs WHERE tenant_id = $1', [tenant.id]),
+    );
+    expect(jobRow[0]!.state).toBe('failed');
+
+    const results = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ ok: boolean; failure_reason: string; raw_output: string; attempts: number }>(
+        'SELECT ok, failure_reason, raw_output, attempts FROM job_results WHERE job_id = (SELECT id FROM jobs WHERE tenant_id = $1)',
+        [tenant.id],
+      ),
+    );
+    expect(results).toHaveLength(1);
+    expect(results[0]!.ok).toBe(false);
+    expect(results[0]!.failure_reason).toBe('schema-invalid');
+    expect(results[0]!.raw_output).toBe('{"wrong":1}');
+    // Bounded re-ask in runCompletion tries 3 times (MAX_REASKS=2 + initial = 3).
+    expect(results[0]!.attempts).toBe(3);
+  });
+});
+
+describe('cancel aborts a running job', () => {
+  it('runner reports cancelled:1, job is cancelled with cancelled trail entry, no result row', async () => {
+    // Stub delays 3 seconds so the runner is mid-call when we cancel.
+    stub.setDefault({ kind: 'delay', ms: 3000 });
+    await submit(1);
+
+    const [firstJob] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string }>('SELECT id FROM jobs WHERE tenant_id = $1', [tenant.id]),
+    );
+    const orderIdRow = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ order_id: string }>('SELECT order_id FROM jobs WHERE id = $1', [firstJob!.id]),
+    );
+    const orderId = orderIdRow[0]!.order_id;
+
+    // Start runOnce without awaiting — it will claim the job and hit the delayed stub.
+    const runnerPromise = runOnce(db, tenant.id, gatewayConfig(), {
+      ...runnerOpts(),
+      heartbeatMs: 60,
+    });
+
+    // Wait ~300ms for the runner to claim and start the model call.
+    await new Promise((r) => setTimeout(r, 300));
+
+    // Cancel the order while the job is running.
+    await cancelOrderNow(db, tenant.id, orderId);
+
+    // Await the runner — it should resolve quickly (aborted, not waited full 3s).
+    const summary = await runnerPromise;
+    expect(summary.cancelled).toBe(1);
+
+    // Job should be cancelled with a trail entry.
+    const jobRow = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ state: string }>('SELECT state FROM jobs WHERE tenant_id = $1', [tenant.id]),
+    );
+    expect(jobRow[0]!.state).toBe('cancelled');
+
+    const trail = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ failure_trail: unknown }>('SELECT failure_trail FROM jobs WHERE tenant_id = $1', [tenant.id]),
+    );
+    const entries = trail[0]!.failure_trail as Array<{ kind: string }>;
+    expect(entries.some((e) => e.kind === 'cancelled')).toBe(true);
+
+    // No job_results — the call was aborted before completion.
+    const results = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string }>('SELECT id FROM job_results WHERE tenant_id = $1', [tenant.id]),
+    );
+    expect(results).toHaveLength(0);
+  }, 15_000);
+
+  it('the cancelled runOnce resolves well under the stub 3000ms delay', async () => {
+    stub.setDefault({ kind: 'delay', ms: 3000 });
+    await submit(1);
+
+    const [firstJob] = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ id: string }>('SELECT id FROM jobs WHERE tenant_id = $1', [tenant.id]),
+    );
+    const orderIdRow = await withTenant(db, tenant.id, (sql) =>
+      sql.query<{ order_id: string }>('SELECT order_id FROM jobs WHERE id = $1', [firstJob[0]!.id]),
+    );
+    const orderId = orderIdRow[0]!.order_id;
+
+    const startedAt = Date.now();
+    const runnerPromise = runOnce(db, tenant.id, gatewayConfig(), {
+      ...runnerOpts(),
+      heartbeatMs: 60,
+    });
+
+    await new Promise((r) => setTimeout(r, 300));
+    await cancelOrderNow(db, tenant.id, orderId);
+
+    await runnerPromise;
+    const elapsed = Date.now() - startedAt;
+    // Well under 3000ms — the cancel aborted rather than waiting.
+    expect(elapsed).toBeLessThan(1500);
+  }, 15_000);
 });
