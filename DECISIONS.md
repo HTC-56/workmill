@@ -86,3 +86,37 @@ this is what the measurement said.
   them from the catalog at runtime; there is no hand-maintained list of what to
   check. Adding a tenant-scoped table means adding its marker, its policies, and
   one fixture in `test/leak.test.ts`.
+
+## Recorded during Phase E (2026-08-28) — measured, not assumed
+
+Two of these are bugs the runner's migration exposed rather than caused. Both had
+been latent since Phase A and both were found by running the existing suite, not
+by reading it.
+
+- **`UPDATE … WHERE id IN (SELECT … FOR UPDATE SKIP LOCKED LIMIT $1)` does not
+  bound the claim.** The planner may treat the subquery as a re-runnable subplan,
+  and the LIMIT then applies to each evaluation rather than to the statement. The
+  shape was correct for two phases and broke the day `sql/005_runner.sql` added a
+  unique index that shifted the plan: a claim for three jobs took five, then four
+  — nondeterministically, on the same data. `src/queue/claim.ts` now computes the
+  candidate set in a `WITH … AS MATERIALIZED` CTE, which is evaluated exactly
+  once by definition. A claim query without `MATERIALIZED` is a latent bug even
+  when its tests are green, because what makes it wrong is a cost estimate.
+- **PGlite's nesting guard could not tell nesting from concurrency.** It tracked
+  "a transaction is open" in a boolean and rejected any second caller. That is
+  right for a call made from inside a transaction callback (which would queue
+  behind its own parent and hang) and wrong for a call made from elsewhere while
+  one happens to be open — which the promise queue already serialises correctly.
+  The runner's heartbeat is the second kind, so it would have been rejected at
+  random depending on timing. `src/db/pglite.ts` now uses `AsyncLocalStorage`, so
+  the flag is set only inside the callback's own async context.
+- **A cancel of a running job aborts a real socket, on PGlite, in-process.** With
+  the stub answering after 3000ms and a 60ms heartbeat, the runner aborts and
+  records the cancellation in roughly 300ms. SPEC.md feature 3's "RUNNING aborts
+  the in-flight model call and records that it did" is therefore proven on the
+  zero-setup engine, not deferred to a real server.
+- **`jsonb_build_object` will not infer a parameter's type.** An untyped `$n`
+  inside it is `unknown` to the planner and the statement is refused with "could
+  not determine data type", even when the same parameter is used elsewhere in the
+  statement in a text context. Every parameter inside one is cast explicitly in
+  `src/queue/lifecycle.ts`.

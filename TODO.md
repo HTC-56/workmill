@@ -123,3 +123,35 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_D.md.
 - [x] §D10 — Close the phase: append a Phase D section to `STATUS.md`, flip
       `ROADMAP.md` row #4 to SHIPPED, and add the three reservations §D10 names.
       Gate: `bash verify.sh` green.
+
+## Phase E: the job runner — see TASK_PHASE_E.md
+
+§E1–§E3 are already committed (`sql/005_runner.sql`, `src/queue/lifecycle.ts`,
+`src/runner/run.ts`, and the abort seam in `src/gateway/client.ts`). Every task
+below writes tests or docs — none needs new `src/` code. Grep your section
+header in TASK_PHASE_E.md.
+
+- [ ] §E4 — Write `test/lifecycle.test.ts`: `backoffMs`, `heartbeat` and
+      `finishJob` from `src/queue/lifecycle.ts`. Pattern file
+      `test/claim.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §E5 — Extend `test/lifecycle.test.ts` with `failAttempt` and
+      `requeueJob`: retry with backoff, dead-letter at three attempts, the
+      failure trail. Keep every existing case. Gate: typecheck + test +
+      scrub-check.
+- [ ] §E6 — Extend `test/lifecycle.test.ts` with `cancelOrder`,
+      `markCancelled`, `reapExpiredLeases` and `orderProgress`. Keep every
+      existing case. Gate: typecheck + test + scrub-check.
+- [ ] §E7 — Write `test/runner.test.ts`: `runOnce` and `runUntilIdle` against
+      the stub gateway — an order end to end, results and usage persisted.
+      Pattern file `test/lifecycle.test.ts`. Gate: typecheck + test +
+      scrub-check.
+- [ ] §E8 — Extend `test/runner.test.ts` with the failure paths: 5xx retried
+      then dead, schema-invalid recorded as failed, cancel aborting a running
+      job. Keep every existing case. Gate: typecheck + test + scrub-check.
+- [ ] §E9 — Update `README.md`: Phase E status (orders run end to end; no
+      budget enforcement, no HTTP surface) and one Layout line for
+      `src/runner/`. Every command shown must already work. Gate:
+      `bash verify.sh` green.
+- [ ] §E10 — Close the phase: append a Phase E section to `STATUS.md`, flip
+      `ROADMAP.md` row #3 to SHIPPED, and add the four reservations §E10 names.
+      Gate: `bash verify.sh` green.
