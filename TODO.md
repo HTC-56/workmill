@@ -92,6 +92,6 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
 - [x] §C10 — Update `README.md`: Phase C status (workflows are versioned tenant
       data; nothing runs them yet) and one Layout line for `src/workflows/`.
       Every command shown must already work. Gate: `bash verify.sh` green.
-- [ ] §C11 — Close the phase: append a Phase C section to `STATUS.md`, flip
+- [x] §C11 — Close the phase: append a Phase C section to `STATUS.md`, flip
       `ROADMAP.md` row #2 to SHIPPED, and add the two reservations §C11 names.
       Gate: `bash verify.sh` green.

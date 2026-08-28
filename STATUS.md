@@ -29,3 +29,12 @@ Five nouns from SPEC.md feature 1 now exist, all under RLS: tenants, memberships
 invites, entitlements, and defaults. The leak suite proves all four verbs (SELECT,
 INSERT, UPDATE, DELETE) plus the re-home refusal across seven tables. Entitlement
 numbers are stored but not yet enforced.
+
+## Phase C — workflows are tenant data
+
+The `workflows` and `workflow_versions` tables live under RLS, so the catalog-driven
+leak suite now proves nine tenant-scoped tables. Editing a workflow appends a version;
+a work order pins the version it ran under. Three example workflows ship (extract,
+classify, summarize). The `{{input}}` substitution is the entire template language —
+a deliberate non-goal that prevents code execution. Nothing yet executes a workflow,
+so the stored output schema has not met a model's output.

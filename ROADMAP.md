@@ -6,7 +6,7 @@ are the one permitted exception to append-only docs.
 | # | Feature (SPEC.md) | Status | Phase | Note |
 |---|---|---|---|---|
 | 1 | Tenancy core under RLS + leak-test suite | SHIPPED | A, B | five nouns built and leak suite covers every one of them |
-| 2 | Workflows as tenant data (template + schema + model, versioned) | PARTIAL | C | tables, store and the order pin committed; tests, examples and docs in flight |
+| 2 | Workflows as tenant data (template + schema + model, versioned) | SHIPPED | C | definitions, versioning and the order pin are complete as tenant data; the pages that expose them are rows #6 and #7 |
 | 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | PARTIAL | A | orders, jobs and the SKIP LOCKED claim proven inside the tenant boundary; orders carry the workflow-version pin (C); leases, retries, DLQ, cancel deferred |
 | 4 | Model calls through the gateway (schema validation, bounded re-ask, usage capture) | NOT BUILT | — | stub server in CI |
 | 5 | Metering + entitlements at the data layer | NOT BUILT | — | |
@@ -31,3 +31,7 @@ planning lane declares PROJECT SPEC COMPLETE rather than inventing scope.
   belongs to the metering phase;
 - **`DEFAULT_ENTITLEMENTS` values** in `src/tenancy/provision.ts` are provisional
   starting values, to be tuned when there is a token ledger to measure against.
+- **`work_orders.workflow_version_id`** is nullable for now; the runner phase makes it
+  `NOT NULL` once the submit path always supplies a version.
+- **The output schema is stored but not validated** against a model's output until the
+  gateway phase (feature 4) ships.
