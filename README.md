@@ -43,6 +43,15 @@ classify, summarize — but **nothing runs them yet**. The gateway and the
 job runner are not built, so a stored output schema is not yet validated
 against any model output.
 
+**Phase D** — model calls go through one configured OpenAI-compatible base
+URL and nowhere else; a logical model name resolves through config, so
+swapping the model behind `'default'` is not a data migration; output is
+parsed and validated against the workflow's stored schema with a re-ask
+bounded at two, and an output still invalid after them is a returned
+failure, not a thrown error; token usage is read off every response.
+Nothing stores those results or that usage yet — the job runner and the
+token ledger are not built, so no work order runs end to end.
+
 ## Quickstart
 
 ```bash
@@ -74,6 +83,7 @@ Three gates must pass for every commit:
 pnpm typecheck   # tsc --noEmit — zero type errors
 pnpm test        # vitest run — all tests green
 bash scripts/scrub-check.sh   # public-repo gate — no secrets, no private hostnames
+bash scripts/live-check.sh    # real-gateway proof — needs a real gateway and model; a human runs this before a demo deployment
 ```
 
 ## Layout
@@ -83,6 +93,7 @@ bash scripts/scrub-check.sh   # public-repo gate — no secrets, no private host
 - `src/seam/` — `withTenant()` RLS seam and the leak-test catalog
 - `src/tenancy/` — tenant provisioning, invites, memberships, entitlement reads
 - `src/workflows/` — workflow definitions, versioning, the `{{input}}` renderer, three example workflows
+- `src/gateway/` — the OpenAI-compatible client, the JSON Schema subset validator, the bounded re-ask
 - `sql/` — numbered SQL migrations (append-only)
 - `test/` — leak suite, seam tests, claim tests, migration tests
 - `scripts/` — `scrub-check.sh` public-repo gate
