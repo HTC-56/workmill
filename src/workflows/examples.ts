@@ -16,7 +16,7 @@ export const EXAMPLE_WORKFLOWS: readonly CreateWorkflowRequest[] = [
     slug: 'extract',
     name: 'Extract fields',
     promptTemplate:
-      'Extract the following fields from the input text: '
+      'Extract the following fields from the input: {{input}} '
       + 'the person\'s name, their email address, and their company. '
       + 'Return only the requested fields.',
     outputSchema: {
@@ -33,8 +33,9 @@ export const EXAMPLE_WORKFLOWS: readonly CreateWorkflowRequest[] = [
     slug: 'classify',
     name: 'Classify text',
     promptTemplate:
-      'Classify the input into exactly one of these categories: '
+      'Classify the following input into exactly one of these categories: '
       + 'spam, marketing, or personal. '
+      + '{{input}} '
       + 'Return only the chosen category.',
     outputSchema: {
       type: 'object',
@@ -51,8 +52,9 @@ export const EXAMPLE_WORKFLOWS: readonly CreateWorkflowRequest[] = [
     slug: 'summarize',
     name: 'Summarize document',
     promptTemplate:
-      'Read the document and write a single-paragraph summary that '
-      + 'captures the key points.',
+      'Read the following document and write a single-paragraph summary that '
+      + 'captures the key points. '
+      + '{{input}}',
     outputSchema: {
       type: 'object',
       properties: {

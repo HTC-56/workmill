@@ -86,7 +86,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
 - [x] §C8 — Write `src/workflows/examples.ts`: the three seeded workflows
       (extract, classify, summarize) plus `seedExampleWorkflows`. Pattern file
       `src/tenancy/provision.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §C9 — Write `test/examples.test.ts`: assertions for §C8, including that
+- [x] §C9 — Write `test/examples.test.ts`: assertions for §C8, including that
       every example passes `assertValidDefinition` and `assertRenderable`.
       Pattern file `test/workflows.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §C10 — Update `README.md`: Phase C status (workflows are versioned tenant
