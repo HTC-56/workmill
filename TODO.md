@@ -120,6 +120,6 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_D.md.
 - [x] §D9 — Update `README.md`: Phase D status, one Layout line for
       `src/gateway/`, and `bash scripts/live-check.sh` under Gates. Every
       command shown must already work. Gate: `bash verify.sh` green.
-- [ ] §D10 — Close the phase: append a Phase D section to `STATUS.md`, flip
+- [x] §D10 — Close the phase: append a Phase D section to `STATUS.md`, flip
       `ROADMAP.md` row #4 to SHIPPED, and add the three reservations §D10 names.
       Gate: `bash verify.sh` green.

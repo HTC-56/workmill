@@ -38,3 +38,14 @@ a work order pins the version it ran under. Three example workflows ship (extrac
 classify, summarize). The `{{input}}` substitution is the entire template language —
 a deliberate non-goal that prevents code execution. Nothing yet executes a workflow,
 so the stored output schema has not met a model's output.
+
+## Phase D — model calls through the gateway
+
+One configured base URL is the only outbound HTTP in `src/`; logical model names
+resolve through config. The stored output schema finally meets a model's output,
+validated against a documented subset of JSON Schema and re-asked at most twice; an
+invalid-after-re-asks output is a returned failure carrying its errors, raw text and
+token usage, not an exception. Every gateway path is proven against the in-process
+stub and `scripts/live-check.sh` proves the same contract against a real gateway.
+Nothing persists a result or its usage — the job runner and the token ledger are
+not yet built.
