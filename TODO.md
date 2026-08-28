@@ -102,7 +102,7 @@ These are the remaining tasks. Grep your section header in TASK_PHASE_C.md.
 and `test/helpers/stub-gateway.ts` — the in-process OpenAI-compatible stub).
 These are the remaining tasks. Grep your section header in TASK_PHASE_D.md.
 
-- [ ] §D4 — Write `test/schema.test.ts`: assertions for `validateAgainstSchema`
+- [x] §D4 — Write `test/schema.test.ts`: assertions for `validateAgainstSchema`
       and `parseJsonObject` in `src/gateway/schema.ts`. No database, no network.
       Pattern file `test/render.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §D5 — Write `test/gateway.test.ts`: assertions for `src/gateway/client.ts`
