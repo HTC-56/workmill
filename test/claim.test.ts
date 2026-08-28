@@ -19,12 +19,28 @@ const CONCURRENT = Boolean(process.env.DATABASE_URL);
 
 let db: Engine;
 let tenant: TestTenant;
+/** Since sql/005 an order must pin a workflow version, so the suite makes one. */
+let versionId: string;
 
 const LEASE_MS = 30_000;
 
 beforeAll(async () => {
   db = await freshDb();
   tenant = await makeTenant(db, 'claimant');
+  versionId = await withAdmin(db, async (sql) => {
+    const [workflow] = await sql.query<{ id: string }>(
+      "INSERT INTO workflows (tenant_id, slug, name) VALUES ($1, 'claim-fixture', 'Claim fixture') RETURNING id",
+      [tenant.id],
+    );
+    const [version] = await sql.query<{ id: string }>(
+      `INSERT INTO workflow_versions
+         (tenant_id, workflow_id, version, prompt_template, output_schema, model)
+       VALUES ($1, $2, 1, 'Do this: {{input}}', '{"type":"object"}'::jsonb, 'default')
+       RETURNING id`,
+      [tenant.id, workflow!.id],
+    );
+    return version!.id;
+  });
 });
 
 afterAll(async () => {
@@ -41,6 +57,7 @@ async function submit(count: number): Promise<string[]> {
       sql,
       tenant.id,
       Array.from({ length: count }, (_, i) => `item ${i}`),
+      { workflowVersionId: versionId },
     ),
   );
   return jobIds;

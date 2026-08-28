@@ -83,8 +83,11 @@ describe('withTenant rolls back on callback throw', () => {
 
     await expect(
       withTenant(db, alice.id, async (sql) => {
+        // `workflows` rather than `work_orders`: since sql/005 an order must
+        // pin a workflow version, and this test is about the rollback, not
+        // about satisfying a foreign key.
         await sql.query(
-          'INSERT INTO work_orders (tenant_id, item_count) VALUES ($1, 1)',
+          "INSERT INTO workflows (tenant_id, slug, name) VALUES ($1, 'rollback-probe', 'Rollback probe')",
           [alice.id],
         );
         throw testError;
@@ -95,7 +98,7 @@ describe('withTenant rolls back on callback throw', () => {
     // proves the rollback was real, not just an admin bypass.
     const [count] = await withTenant(db, bob.id, (sql) =>
       sql.query<{ n: string | number }>(
-        "SELECT count(*) AS n FROM work_orders WHERE tenant_id = $1",
+        "SELECT count(*) AS n FROM workflows WHERE tenant_id = $1",
         [alice.id],
       ),
     );
