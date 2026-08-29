@@ -269,7 +269,7 @@ then grep your section header.
 - [x] §I5 — Write `test/operator-tenants.test.ts`: the operator's tenant table
       and the two edits from `src/operator/tenants.ts`. No HTTP server.
       Pattern file `test/entitlements.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §I6 — Write `test/operator-fleet.test.ts`: `probeGateway` on an injected
+- [x] §I6 — Write `test/operator-fleet.test.ts`: `probeGateway` on an injected
       fetch (both branches) and `collectFleet` on a migrated database. No
       network. Pattern file `test/metrics.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §I7 — Write `test/operator-api.test.ts`: the operator bearer wall, the 503
