@@ -1,0 +1,11 @@
+[Unit]
+Description=Workmill — hourly demo reset timer
+Documentation=https://github.com/harpertechco/workmill#readme
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=workmill-reset.service
+
+[Install]
+WantedBy=timers.target

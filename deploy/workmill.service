@@ -1,0 +1,31 @@
+[Unit]
+Description=Workmill — AI workflow scheduler
+Documentation=https://github.com/harpertechco/workmill#readme
+After=network.target workmill-gateway.service
+Wants=workmill-gateway.service
+
+[Service]
+Type=simple
+User=workmill
+Group=workmill
+WorkingDirectory=/opt/workmill
+ExecStart=/usr/bin/node /opt/workmill/dist/bin/workmill.js
+Environment=WORKMILL_CONFIG=/etc/workmill/workmill.yaml
+EnvironmentFile=/etc/workmill/workmill.env
+Restart=on-failure
+RestartSec=3
+
+# Secrets stored in /etc/workmill/workmill.env (mode 0600):
+#   WORKMILL_OPERATOR_TOKEN   the operator bearer; unset disables /metrics,
+#                             /api/operator/* and everything the console does
+#   GATEWAY_API_KEY           the gateway's key, if it wants one
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/log/workmill
+
+[Install]
+WantedBy=multi-user.target

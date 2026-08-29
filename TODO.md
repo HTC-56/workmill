@@ -66,7 +66,7 @@ then grep your section header.
       `startRunnerLoop` against the stub gateway. Call `sweep()` yourself; never
       wait for the timer. Pattern file `test/metering.test.ts`. Gate: typecheck
       + test + scrub-check.
-- [ ] §J8 — Write the four systemd units and `deploy/README.md` named in §J8.
+- [x] §J8 — Write the four systemd units and `deploy/README.md` named in §J8.
       Paths are `/opt/workmill`, `/etc/workmill`, `/var/log/workmill` only — no
       home paths, no LAN addresses. Gate: typecheck + test + scrub-check.
 - [ ] §J9 — Update `README.md`: the Phase J paragraph, the ten-minute

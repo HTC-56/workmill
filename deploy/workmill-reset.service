@@ -1,0 +1,20 @@
+[Unit]
+Description=Workmill — reset demo to seed state
+Documentation=https://github.com/harpertechco/workmill#readme
+After=network.target
+
+[Service]
+Type=oneshot
+User=workmill
+Group=workmill
+WorkingDirectory=/opt/workmill
+ExecStart=/usr/bin/node /opt/workmill/dist/bin/reset-demo.js
+Environment=WORKMILL_CONFIG=/etc/workmill/workmill.yaml
+EnvironmentFile=/etc/workmill/workmill.env
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

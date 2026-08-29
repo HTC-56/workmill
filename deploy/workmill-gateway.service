@@ -1,0 +1,26 @@
+# workmill-gateway.service — EXAMPLE / placeholder unit
+#
+# This file is a placeholder to be replaced by whatever the operator
+# actually runs as the upstream OpenAI-compatible gateway
+# (local-ai-gateway or another product).  Workmill only needs this
+# service listening at the gateway.baseUrl set in
+# /etc/workmill/workmill.yaml and never contains the gateway itself.
+#
+# Replace the contents below with the real unit for your gateway.
+# See deploy/README.md for the install order.
+
+[Unit]
+Description=Workmill upstream gateway (PLACEHOLDER — replace with real gateway unit)
+After=network.target
+
+[Service]
+Type=simple
+User=workmill
+Group=workmill
+WorkingDirectory=/opt/workmill
+ExecStart=/usr/bin/node /opt/workmill/dist/bin/gateway-placeholder.js
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
