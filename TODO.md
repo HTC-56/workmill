@@ -281,7 +281,7 @@ then grep your section header.
 - [x] §I9 — Write `test/console-page.test.ts`: `GET /operator` needs no bearer,
       carries the CSP, and the document fetches nothing external. Pattern file
       `test/page.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §I10 — Update `README.md`: Phase I status, one Layout line each for
+- [x] §I10 — Update `README.md`: Phase I status, one Layout line each for
       `src/operator/` and `src/console/`, and the routes §I10 names. Every
       command shown must already work. Gate: `bash verify.sh` green.
 - [ ] §I11 — Close the phase: append a Phase I section to `STATUS.md`, flip

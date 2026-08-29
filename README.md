@@ -83,6 +83,18 @@ are minted by tests today. Still missing: the operator console
 (ROADMAP row #7), and nothing schedules the runner or serves the
 process outside tests.
 
+**Phase I** — the operator console is live at `GET /operator`, one
+self-contained HTML file under the same rules as the dashboard — no
+framework, no build step, no external request — made of
+`/api/operator/*` routes behind the operator bearer. It shows a
+tenant table with state and entitlements, a provision form,
+entitlement edits, support grants with a required reason and a
+countdown, the audit trail, and a fleet panel that probes the
+gateway. The tenant reads the same audit trail at `GET /api/audit`
+with its own bearer, so the trail matters to both sides. Still
+missing: demo mode and deploy packaging (ROADMAP row #9), and
+nothing schedules the runner or serves the process outside tests.
+
 ## Quickstart
 
 ```bash
@@ -130,8 +142,10 @@ bash scripts/live-check.sh    # real-gateway proof — needs a real gateway and 
 - `src/server/` — the HTTP app (Fastify), the auth seam, and the operator bearer guard
 - `src/ops/` — events (in-process bus, SSE helpers), metrics (Prometheus exposition), the JSONL ops log
 - `src/dashboard/` — the tenant dashboard page (one self-contained HTML file with no framework, no build step, no external request) and its read models
-- `sql/` — numbered SQL migrations (append-only), including `sql/006_metering.sql` and `sql/007_api.sql`
+- `src/operator/` — the grants library, the audit trail, the tenant table, and the fleet probe
+- `src/console/` — the operator console page (one self-contained HTML file with no framework, no build step, no external request)
+- `sql/` — numbered SQL migrations (append-only), including `sql/006_metering.sql`, `sql/007_api.sql`, and `sql/008_operator.sql`
 - `test/` — leak suite, seam tests, claim tests, migration tests
 - `scripts/` — `scrub-check.sh` public-repo gate
 
-Routes: `GET /`, `/api/me`, `/api/workflows`, `/api/orders` (GET and POST), `/api/orders/:id`, `/api/dead`, `/api/usage`.
+Routes: `GET /`, `/api/me`, `/api/workflows`, `/api/orders` (GET and POST), `/api/orders/:id`, `/api/dead`, `/api/usage`, `/operator`, `/api/audit`, `/api/grants`, `/api/operator/*`.
