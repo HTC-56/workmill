@@ -19,6 +19,11 @@ are the one permitted exception to append-only docs.
 When every row reads SHIPPED and verify.sh is green, the project is done — the
 planning lane declares PROJECT SPEC COMPLETE rather than inventing scope.
 
+**Declared 2026-08-29**: every row reads SHIPPED and `bash verify.sh` is green
+(four gates, 570 passed, 2 pre-registered PGlite skips). See `NEEDS_HUMAN.md` —
+what remains is human-gated: publishing, the demo deployment, and any scope
+beyond SPEC.md v1.
+
 ## Reservations ledger — small deferred calls recorded inside phase specs
 
 - **job lifecycle beyond claim** — heartbeat, lease reaper, retries with backoff,
