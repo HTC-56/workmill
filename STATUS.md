@@ -83,6 +83,17 @@ The runner publishes transitions to an in-process bus when given one. Deliberate
 left: no page renders any of it, and nothing schedules the runner or serves the
 process.
 
+## Phase I — the operator console
+
+`GET /operator` serves one self-contained HTML file behind the operator bearer.
+A support grant is a row with a required reason and a mandatory expiry, so a grant
+with no justification or no end cannot be written. Every operator write appends an
+audit row in the same transaction as the change, and the tenant reads those rows
+with its own bearer at `GET /api/audit`. `support_grants` and `audit_log` make
+fourteen tenant-scoped tables the leak suite proves. Deliberately left: demo mode
+and deploy packaging are ROADMAP row #9, and nothing schedules the runner or serves
+the process.
+
 ## Phase H — the tenant dashboard
 
 `GET /` serves one self-contained HTML file — no framework, no build step, no

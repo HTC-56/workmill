@@ -284,6 +284,6 @@ then grep your section header.
 - [x] §I10 — Update `README.md`: Phase I status, one Layout line each for
       `src/operator/` and `src/console/`, and the routes §I10 names. Every
       command shown must already work. Gate: `bash verify.sh` green.
-- [ ] §I11 — Close the phase: append a Phase I section to `STATUS.md`, flip
+- [x] §I11 — Close the phase: append a Phase I section to `STATUS.md`, flip
       `ROADMAP.md` row #7 to SHIPPED, and record the four reservations §I11
       names. Gate: `bash verify.sh` green.
