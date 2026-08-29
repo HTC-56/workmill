@@ -103,3 +103,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-29T04:07:12	loop	qwen	commit	346	71068	129	32	821	- [ ] §H7 — Write `test/api-dead.test.ts`: the dead-letter view, requeue once
 2026-08-29T04:33:38	plan	claude	commit	119	189434	76	26	1034	plan next phase
 2026-08-29T04:42:52	loop	qwen	commit	64	14933	27	8	663	- [ ] §I4 — Write `test/operator-grants.test.ts`: the grants library, the pure
+2026-08-29T04:47:00	loop	qwen	commit	122	24952	50	14	247	- [ ] §I5 — Write `test/operator-tenants.test.ts`: the operator's tenant table
