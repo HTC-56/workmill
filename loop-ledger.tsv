@@ -115,3 +115,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-29T06:08:11	loop	qwen	commit	53	19636	20	7	371	- [ ] §J4 — Write `test/yaml.test.ts`: the YAML subset `src/config/yaml.ts`
 2026-08-29T06:12:05	loop	qwen	commit	86	31578	32	9	233	- [ ] §J5 — Write `test/config.test.ts`: `buildConfig` — defaults, the file,
 2026-08-29T06:19:45	loop	qwen	commit	136	32357	54	12	458	- [ ] §J6 — Write `test/demo.test.ts`: `seedDemo`, the tight budgets,
+2026-08-29T06:35:41	loop	qwen	commit	184	42816	75	20	954	- [ ] §J7 — Write `test/schedule.test.ts`: `listTenantIds`, `sweepOnce` and
