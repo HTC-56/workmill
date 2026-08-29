@@ -263,7 +263,7 @@ and the two tenant-side routes). Every task below writes tests or docs — none
 needs new `src/` code. Read the nine facts at the top of TASK_PHASE_I.md once,
 then grep your section header.
 
-- [ ] §I4 — Write `test/operator-grants.test.ts`: the grants library, the pure
+- [x] §I4 — Write `test/operator-grants.test.ts`: the grants library, the pure
       countdown helpers, and the audit trail beside them. No HTTP server.
       Pattern file `test/auth.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §I5 — Write `test/operator-tenants.test.ts`: the operator's tenant table
