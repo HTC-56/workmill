@@ -7,8 +7,13 @@ import { provisionTenant } from '../src/tenancy/provision.js';
 import {
   readLimits,
   assertSubmitAllowed,
+  budgetStatus,
+  blockOpenOrders,
+  clearOrderBlocks,
+  BUDGET_EXHAUSTED,
   EntitlementRefusedError,
 } from '../src/metering/limits.js';
+import { recordUsage } from '../src/metering/ledger.js';
 import { enqueueOrder } from '../src/queue/enqueue.js';
 
 /**
@@ -29,6 +34,11 @@ let tenant: { id: string; slug: string; tenantId: string; entitlementsId: string
 let bareTenant: TestTenant;
 /** A workflow version whose model is allowed (the provisioned tenant's default). */
 let versionId: string;
+
+/** Tenant provisioned with a tight dailyTokenBudget for budget tests. */
+let budgetTenant: { id: string; tenantId: string };
+/** Workflow version under the budget tenant. */
+let budgetVersionId: string;
 
 beforeAll(async () => {
   db = await freshDb();
@@ -63,6 +73,32 @@ beforeAll(async () => {
     );
     return version!.id;
   });
+
+  // Budget tenant — tight dailyTokenBudget so recordUsage can exhaust it.
+  const budgetProv = await provisionTenant(db, {
+    slug: 'limits-budget',
+    name: 'Limits Budget',
+    ownerEmail: 'admin@limitsbudget.example',
+    entitlements: {
+      dailyTokenBudget: 100,
+    },
+  });
+  budgetTenant = { id: budgetProv.tenantId, tenantId: budgetProv.tenantId };
+
+  budgetVersionId = await withAdmin(db, async (sql) => {
+    const [workflow] = await sql.query<{ id: string }>(
+      "INSERT INTO workflows (tenant_id, slug, name) VALUES ($1, 'budget-fixture', 'Budget fixture') RETURNING id",
+      [budgetTenant.id],
+    );
+    const [version] = await sql.query<{ id: string }>(
+      `INSERT INTO workflow_versions
+         (tenant_id, workflow_id, version, prompt_template, output_schema, model)
+       VALUES ($1, $2, 1, 'Do this: {{input}}', '{"type":"object"}'::jsonb, 'default')
+       RETURNING id`,
+      [budgetTenant.id, workflow!.id],
+    );
+    return version!.id;
+  });
 });
 
 afterAll(async () => {
@@ -70,10 +106,15 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  // Clear work_orders so each test starts fresh.
-  await withAdmin(db, (sql) =>
-    sql.query('DELETE FROM work_orders WHERE tenant_id = $1', [tenant.id]),
-  );
+  // Clear work_orders and jobs for both tenants so each test starts fresh.
+  for (const tid of [tenant.id, budgetTenant.id, bareTenant.id]) {
+    await withAdmin(db, (sql) =>
+      sql.query('DELETE FROM work_orders WHERE tenant_id = $1', [tid]),
+    );
+    await withAdmin(db, (sql) =>
+      sql.query('DELETE FROM jobs WHERE tenant_id = $1', [tid]),
+    );
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -387,5 +428,238 @@ describe('Triggers — bare tenant fails open (§F7)', () => {
     );
 
     expect(jobCount!.n).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 11. budgetStatus — before any spend (§F8)
+// ---------------------------------------------------------------------------
+
+describe('budgetStatus — before any spend (§F8)', () => {
+  it('reports used: 0, remaining equal to dailyTokenBudget, exhausted: false', async () => {
+    const status = await withTenant(db, budgetTenant.id, (sql) => budgetStatus(sql));
+
+    expect(status.used).toBe(0);
+    expect(status.remaining).toBe(100);
+    expect(status.exhausted).toBe(false);
+    expect(status.budget).toBe(100);
+  });
+});
+
+/** Helper: bill `totalTokens` for a fresh job under an existing order, returning the job id. */
+async function billTokens(
+  db: Engine,
+  tenantId: string,
+  orderId: string,
+  totalTokens: number,
+): Promise<string> {
+  // enqueueOrder creates jobs at idx=0,1,...; we always insert at idx=1
+  // since the F8 tests only enqueue one-item orders.
+  const jobId = randomUUID();
+  await withAdmin(db, async (sql) =>
+    sql.query(
+      'INSERT INTO jobs (id, tenant_id, order_id, idx, input) VALUES ($1, $2, $3, 1, \'ok\')',
+      [jobId, tenantId, orderId],
+    ),
+  );
+  await withTenant(db, tenantId, async (sql) =>
+    recordUsage(sql, {
+      jobId,
+      orderId,
+      model: 'default',
+      usage: { promptTokens: totalTokens, completionTokens: 0, totalTokens },
+    }),
+  );
+  return jobId;
+}
+
+// ---------------------------------------------------------------------------
+// 12. budgetStatus — after exceeding the budget (§F8)
+// ---------------------------------------------------------------------------
+
+describe('budgetStatus — after exceeding budget (§F8)', () => {
+  it('reports used as the billed amount, remaining: 0, exhausted: true', async () => {
+    // Create an order + bill 200 tokens — well over the 100-token budget.
+    const orderResult = await withTenant(db, budgetTenant.id, (sql) =>
+      enqueueOrder(sql, budgetTenant.id, ['x'], {
+        workflowVersionId: budgetVersionId,
+      }),
+    );
+    await billTokens(db, budgetTenant.id, orderResult.orderId, 200);
+
+    const status = await withTenant(db, budgetTenant.id, (sql) => budgetStatus(sql));
+
+    expect(status.used).toBe(200);
+    expect(status.remaining).toBe(0); // never negative
+    expect(status.exhausted).toBe(true);
+    expect(status.budget).toBe(100);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 13. budgetStatus — bare tenant has no budget (§F8)
+// ---------------------------------------------------------------------------
+
+describe('budgetStatus — bare tenant (§F8)', () => {
+  it('reports budget: null, remaining: null, exhausted: false for a tenant with no entitlements row', async () => {
+    const status = await withTenant(db, bareTenant.id, (sql) => budgetStatus(sql));
+
+    expect(status.budget).toBeNull();
+    expect(status.remaining).toBeNull();
+    expect(status.exhausted).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 14. blockOpenOrders — stamps an open order with pending jobs (§F8)
+// ---------------------------------------------------------------------------
+
+describe('blockOpenOrders — stamps pending orders (§F8)', () => {
+  it('stamps an open order with pending jobs and returns 1', async () => {
+    // Exhaust the budget by billing 200 tokens, then finish those jobs
+    // so only the new order has pending work.
+    const exhaustOrder = await withTenant(db, budgetTenant.id, (sql) =>
+      enqueueOrder(sql, budgetTenant.id, ['x'], {
+        workflowVersionId: budgetVersionId,
+      }),
+    );
+    await billTokens(db, budgetTenant.id, exhaustOrder.orderId, 200);
+    // Mark the exhaust order's jobs as succeeded so blockOpenOrders skips it.
+    await withAdmin(db, (sql) =>
+      sql.query("UPDATE jobs SET state = 'succeeded' WHERE order_id = $1", [exhaustOrder.orderId]),
+    );
+
+    // Create a new open order with pending jobs.
+    const orderResult = await withTenant(db, budgetTenant.id, (sql) =>
+      enqueueOrder(sql, budgetTenant.id, ['a'], {
+        workflowVersionId: budgetVersionId,
+      }),
+    );
+
+    // Block open orders — should stamp only this one.
+    const count = await withTenant(db, budgetTenant.id, (sql) => blockOpenOrders(sql));
+
+    expect(count).toBe(1);
+
+    // Verify the stamp.
+    const [order] = await withAdmin(db, (sql) =>
+      sql.query<{ blocked_reason: string | null; blocked_at: unknown }>(
+        'SELECT blocked_reason, blocked_at FROM work_orders WHERE id = $1',
+        [orderResult.orderId],
+      ),
+    );
+
+    expect(order!.blocked_reason).toBe(BUDGET_EXHAUSTED);
+    expect(order!.blocked_at).not.toBeNull();
+  });
+
+  it('returns 0 when the order is already stamped', async () => {
+    // Exhaust the budget.
+    const exhaustOrder = await withTenant(db, budgetTenant.id, (sql) =>
+      enqueueOrder(sql, budgetTenant.id, ['x'], {
+        workflowVersionId: budgetVersionId,
+      }),
+    );
+    await billTokens(db, budgetTenant.id, exhaustOrder.orderId, 200);
+
+    // Create an open order with pending jobs (id unused — blockOpenOrders finds by state).
+    await withTenant(db, budgetTenant.id, (sql) =>
+      enqueueOrder(sql, budgetTenant.id, ['a'], {
+        workflowVersionId: budgetVersionId,
+      }),
+    );
+
+    // First call — stamps it.
+    await withTenant(db, budgetTenant.id, (sql) => blockOpenOrders(sql));
+
+    // Second call — returns 0.
+    const count = await withTenant(db, budgetTenant.id, (sql) => blockOpenOrders(sql));
+
+    expect(count).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 15. blockOpenOrders — does NOT stamp an order whose jobs are all done (§F8)
+// ---------------------------------------------------------------------------
+
+describe('blockOpenOrders — finished orders are not stamped (§F8)', () => {
+  it('skips an order whose jobs have all finished', async () => {
+    // Exhaust the budget.
+    const exhaustOrder = await withTenant(db, budgetTenant.id, (sql) =>
+      enqueueOrder(sql, budgetTenant.id, ['x'], {
+        workflowVersionId: budgetVersionId,
+      }),
+    );
+    await billTokens(db, budgetTenant.id, exhaustOrder.orderId, 200);
+    // Mark the exhaust order's jobs as succeeded so it's not picked up.
+    await withAdmin(db, (sql) =>
+      sql.query("UPDATE jobs SET state = 'succeeded' WHERE order_id = $1", [exhaustOrder.orderId]),
+    );
+
+    // Create an order with jobs and finish them immediately.
+    const orderResult = await withTenant(db, budgetTenant.id, (sql) =>
+      enqueueOrder(sql, budgetTenant.id, ['a'], {
+        workflowVersionId: budgetVersionId,
+      }),
+    );
+    // Mark the jobs as succeeded so the order has no pending jobs.
+    await withAdmin(db, (sql) =>
+      sql.query(
+        "UPDATE jobs SET state = 'succeeded' WHERE order_id = $1",
+        [orderResult.orderId],
+      ),
+    );
+
+    // Block — should return 0 because there are no pending jobs.
+    const count = await withTenant(db, budgetTenant.id, (sql) => blockOpenOrders(sql));
+
+    expect(count).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 16. clearOrderBlocks — resets the stamp (§F8)
+// ---------------------------------------------------------------------------
+
+describe('clearOrderBlocks (§F8)', () => {
+  it('puts blocked_reason and blocked_at back to null', async () => {
+    // Exhaust the budget and stamp an order.
+    const exhaustOrder = await withTenant(db, budgetTenant.id, (sql) =>
+      enqueueOrder(sql, budgetTenant.id, ['x'], {
+        workflowVersionId: budgetVersionId,
+      }),
+    );
+    await billTokens(db, budgetTenant.id, exhaustOrder.orderId, 200);
+
+    const orderResult = await withTenant(db, budgetTenant.id, (sql) =>
+      enqueueOrder(sql, budgetTenant.id, ['a'], {
+        workflowVersionId: budgetVersionId,
+      }),
+    );
+
+    await withTenant(db, budgetTenant.id, (sql) => blockOpenOrders(sql));
+
+    // Verify stamped.
+    const [pre] = await withAdmin(db, (sql) =>
+      sql.query<{ blocked_reason: string | null; blocked_at: unknown }>(
+        'SELECT blocked_reason, blocked_at FROM work_orders WHERE id = $1',
+        [orderResult.orderId],
+      ),
+    );
+    expect(pre!.blocked_reason).toBe(BUDGET_EXHAUSTED);
+
+    // Clear blocks.
+    await withTenant(db, budgetTenant.id, (sql) => clearOrderBlocks(sql));
+
+    // Verify cleared.
+    const [post] = await withAdmin(db, (sql) =>
+      sql.query<{ blocked_reason: string | null; blocked_at: unknown }>(
+        'SELECT blocked_reason, blocked_at FROM work_orders WHERE id = $1',
+        [orderResult.orderId],
+      ),
+    );
+    expect(post!.blocked_reason).toBeNull();
+    expect(post!.blocked_at).toBeNull();
   });
 });

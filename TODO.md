@@ -172,7 +172,7 @@ new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 - [x] §F7 — Extend `test/limits.test.ts`: the two `sql/006` triggers refuse an
       oversized item and an oversized order on a hand-written INSERT. Keep every
       existing case. Gate: typecheck + test + scrub-check.
-- [ ] §F8 — Extend `test/limits.test.ts` with `budgetStatus`,
+- [x] §F8 — Extend `test/limits.test.ts` with `budgetStatus`,
       `blockOpenOrders` and `clearOrderBlocks`. Keep every existing case.
       Gate: typecheck + test + scrub-check.
 - [ ] §F9 — Extend `test/claim.test.ts`: the claim query itself enforces
