@@ -95,15 +95,39 @@ with its own bearer, so the trail matters to both sides. Still
 missing: demo mode and deploy packaging (ROADMAP row #9), and
 nothing schedules the runner or serves the process outside tests.
 
+**Phase J** — workmill is now a process you can run: `pnpm build` then
+`pnpm start` serves the pages and ticks the queue on a timer, backed by a
+YAML config file with an environment override for every field. Demo seed
+and reset scripts provision two tenants with tight budgets for public
+testing; example systemd units ship in `deploy/`. The demo runs two
+tenants on the same entitlement system every tenant uses — one roomy, one
+whose small budget a five-item order really does exhaust. Nothing is left
+from SPEC.md; the demo DEPLOYMENT itself is human-gated.
+
 ## Quickstart
 
-```bash
-pnpm install
-pnpm test
-```
+Follow these steps in about ten minutes:
 
-This needs no database and no model server — the default engine is PGlite, a
-serverless Postgres that runs in-process.
+1. `pnpm install` then `pnpm test` — no database, no model server. The
+   default engine is PGlite, a serverless Postgres that runs in-process.
+2. Start Postgres and export `DATABASE_URL` (reuse the docker line in the
+   Engines section below).
+3. `pnpm build`.
+4. `pnpm seed:demo` — prints two tenants and a bearer for each.
+5. Export `WORKMILL_OPERATOR_TOKEN` of 16 or more characters.
+6. `pnpm start`.
+7. Open `http://localhost:3000/` and paste the `demo-acme` bearer token.
+   Submit a five-item order against the `summarize` workflow.
+8. Paste the `demo-globex` bearer and submit the same order to watch the
+   daily budget refuse it mid-order, with the order saying why.
+9. Open `http://localhost:3000/operator` with the operator bearer, grant
+   support access with a reason, and read the same entry back at
+   `GET /api/audit` with the tenant bearer.
+10. `pnpm reset:demo`.
+
+The demo scripts refuse to run without `DATABASE_URL`, because the default
+engine lives in the process and dies with it. `pnpm mint:token <slug>` is
+how any other tenant gets a bearer.
 
 ## Engines
 
@@ -120,13 +144,22 @@ The PGlite run is the happy path; the real-Postgres run is the authoritative one
 
 ## Gates
 
-Three gates must pass for every commit:
+Four gates must pass for every commit:
 
 ```bash
 pnpm typecheck   # tsc --noEmit — zero type errors
 pnpm test        # vitest run — all tests green
-bash scripts/scrub-check.sh   # public-repo gate — no secrets, no private hostnames
-bash scripts/live-check.sh    # real-gateway proof — needs a real gateway and model; a human runs this before a demo deployment
+pnpm verify      # typecheck + test + scrub-check + README command lint
+```
+
+## Commands
+
+```bash
+pnpm build         # compile everything under src/
+pnpm start         # run the compiled application
+pnpm seed:demo     # provision the demo tenants and workflows
+pnpm reset:demo    # clear and re-seed the demo
+pnpm mint:token    # mint a bearer for a tenant by slug
 ```
 
 ## Layout
@@ -138,12 +171,18 @@ bash scripts/live-check.sh    # real-gateway proof — needs a real gateway and 
 - `src/workflows/` — workflow definitions, versioning, the `{{input}}` renderer, three example workflows
 - `src/gateway/` — the OpenAI-compatible client, the JSON Schema subset validator, the bounded re-ask
 - `src/runner/run.ts` — the tick: claim, call the gateway, record results and usage
+- `src/runner/schedule.ts` — the loop that claims and processes jobs on a timer
 - `src/metering/` — the token ledger and the entitlement refusals
+- `src/config/` — the YAML subset and the config merge (file + environment override)
+- `src/demo/` — seed and reset for the public demo
+- `src/bin/` — the entrypoint and the three operator commands (seed, reset, mint-token)
+- `src/main.ts` — open the engine, migrate, serve, tick the queue, shut down
 - `src/server/` — the HTTP app (Fastify), the auth seam, and the operator bearer guard
 - `src/ops/` — events (in-process bus, SSE helpers), metrics (Prometheus exposition), the JSONL ops log
 - `src/dashboard/` — the tenant dashboard page (one self-contained HTML file with no framework, no build step, no external request) and its read models
 - `src/operator/` — the grants library, the audit trail, the tenant table, and the fleet probe
 - `src/console/` — the operator console page (one self-contained HTML file with no framework, no build step, no external request)
+- `deploy/` — example config and systemd units
 - `sql/` — numbered SQL migrations (append-only), including `sql/006_metering.sql`, `sql/007_api.sql`, and `sql/008_operator.sql`
 - `test/` — leak suite, seam tests, claim tests, migration tests
 - `scripts/` — `scrub-check.sh` public-repo gate

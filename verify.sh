@@ -52,7 +52,7 @@ while IFS= read -r line; do
       fi
       ;;
   esac
-done < <(grep -oE '(pnpm|bash) [a-zA-Z0-9_./-]+' "$README")
+done < <(grep -oE '(pnpm|bash) [a-zA-Z0-9_./:-]+' "$README")
 
 if [ "$FAIL" -ne 0 ]; then
   echo ""

@@ -69,7 +69,7 @@ then grep your section header.
 - [x] §J8 — Write the four systemd units and `deploy/README.md` named in §J8.
       Paths are `/opt/workmill`, `/etc/workmill`, `/var/log/workmill` only — no
       home paths, no LAN addresses. Gate: typecheck + test + scrub-check.
-- [ ] §J9 — Update `README.md`: the Phase J paragraph, the ten-minute
+- [x] §J9 — Update `README.md`: the Phase J paragraph, the ten-minute
       quickstart §J9 spells out, four new Layout lines, and only the nine
       commands that exist. Gate: `bash verify.sh` green.
 - [ ] §J10 — Write `docs/PROCESS.md`: three PoCs into one product, then the
