@@ -239,7 +239,7 @@ facts at the top of TASK_PHASE_H.md once, then grep your section header.
 - [x] §H5 — Write `test/api-workflows.test.ts`: `GET /api/workflows` and the
       submit — 201, the three 400s, the 404 and the 422. Pattern file
       `test/api-auth.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §H6 — Write `test/api-orders.test.ts`: progress, per-item detail, the
+- [x] §H6 — Write `test/api-orders.test.ts`: progress, per-item detail, the
       results download and cancel, with the stub gateway. Pattern file
       `test/metering.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §H7 — Write `test/api-dead.test.ts`: the dead-letter view, requeue once
