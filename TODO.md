@@ -233,7 +233,7 @@ facts at the top of TASK_PHASE_H.md once, then grep your section header.
 - [x] §H3 — Write `test/dashboard-queries.test.ts`: the five read models in
       `src/dashboard/queries.ts` plus `clampPageSize`. No HTTP server. Pattern
       file `test/ledger.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §H4 — Write `test/api-auth.test.ts`: every `/api/*` route 401s without a
+- [x] §H4 — Write `test/api-auth.test.ts`: every `/api/*` route 401s without a
       bearer, and `GET /api/me` carries the limits and the budget. Pattern file
       `test/server.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §H5 — Write `test/api-workflows.test.ts`: `GET /api/workflows` and the
