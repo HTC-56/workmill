@@ -221,3 +221,36 @@ grep your section header.
 - [x] §G11 — Close the phase: append a Phase G section to `STATUS.md`, flip
       `ROADMAP.md` row #8 to SHIPPED, and record the four reservations §G11
       names. Gate: `bash verify.sh` green.
+
+## Phase H: the tenant dashboard — see TASK_PHASE_H.md
+
+§H1–§H2 are already committed (`src/dashboard/queries.ts`, `src/server/api.ts`,
+`src/dashboard/page.ts`, `src/server/guards.ts`, the `GET /` route in
+`src/server/app.ts`, and four new methods on `test/helpers/server.ts`). Every
+task below writes tests or docs — none needs new `src/` code. Read the eight
+facts at the top of TASK_PHASE_H.md once, then grep your section header.
+
+- [ ] §H3 — Write `test/dashboard-queries.test.ts`: the five read models in
+      `src/dashboard/queries.ts` plus `clampPageSize`. No HTTP server. Pattern
+      file `test/ledger.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §H4 — Write `test/api-auth.test.ts`: every `/api/*` route 401s without a
+      bearer, and `GET /api/me` carries the limits and the budget. Pattern file
+      `test/server.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §H5 — Write `test/api-workflows.test.ts`: `GET /api/workflows` and the
+      submit — 201, the three 400s, the 404 and the 422. Pattern file
+      `test/api-auth.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §H6 — Write `test/api-orders.test.ts`: progress, per-item detail, the
+      results download and cancel, with the stub gateway. Pattern file
+      `test/metering.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §H7 — Write `test/api-dead.test.ts`: the dead-letter view, requeue once
+      then 404, and the usage meter. No runner. Pattern file
+      `test/api-workflows.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §H8 — Write `test/page.test.ts`: `GET /` needs no bearer, carries the CSP,
+      and the document fetches nothing external. Pattern file
+      `test/server.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §H9 — Update `README.md`: Phase H status, one Layout line for
+      `src/dashboard/`, and the route list §H9 names. Every command shown must
+      already work. Gate: `bash verify.sh` green.
+- [ ] §H10 — Close the phase: append a Phase H section to `STATUS.md`, flip
+      `ROADMAP.md` row #6 to SHIPPED, and record the four reservations §H10
+      names. Gate: `bash verify.sh` green.

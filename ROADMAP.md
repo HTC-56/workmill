@@ -10,7 +10,7 @@ are the one permitted exception to append-only docs.
 | 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | SHIPPED | A, E | claim proven in A; E adds lifecycle (heartbeat, backoff, dead-letter, requeue, cancel), runner tick, and durable `job_results` with output and token counts |
 | 4 | Model calls through the gateway (schema validation, bounded re-ask, usage capture) | SHIPPED | D, E | client, JSON Schema subset validator and the bounded re-ask with usage capture, proven against the stub; usage attributed to jobs in `job_results`; aggregating it is the ledger (row #5) |
 | 5 | Metering + entitlements at the data layer | SHIPPED | F | `token_ledger` under RLS, item caps as triggers, concurrency cap and daily budget in the claim query, budget exhaustion stamps orders; nothing serves it over HTTP yet |
-| 6 | Tenant dashboard (self-contained page) | NOT BUILT | — | hero screenshot |
+| 6 | Tenant dashboard (self-contained page) | PARTIAL | H | page and `/api/*` committed — one self-contained HTML file, six panels, no external request; Phase H's tests and the README still to land |
 | 7 | Operator console (grants, audit, fleet panel) | NOT BUILT | — | |
 | 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | SHIPPED | G | three routes, two bearer types, JSONL ops log, in-process event bus, and the tenant-scoped SSE stream are all committed and tested |
 | 9 | Demo mode + deploy-grade packaging (seed/reset, config, units, dual-engine CI, quickstart) | PARTIAL | A | dual-engine CI landed early — it is the only place the Postgres half of Phase A's proof runs; everything else pending |
