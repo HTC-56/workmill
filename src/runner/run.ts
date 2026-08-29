@@ -12,6 +12,7 @@ import {
 } from '../queue/lifecycle.js';
 import { GatewayAbortedError, GatewayError, type GatewayConfig } from '../gateway/client.js';
 import { runCompletion } from '../gateway/complete.js';
+import { blockOpenOrders, budgetStatus, clearOrderBlocks } from '../metering/limits.js';
 
 /**
  * The job runner (SPEC.md feature 3): the loop that turns claimed jobs into
@@ -31,10 +32,16 @@ import { runCompletion } from '../gateway/complete.js';
  * runner at all: the heartbeat's transaction only ever opens while the model
  * call is in flight and no other transaction exists.
  *
- * Jobs in a batch run one after another. Running them at once is the
- * `max_concurrent_jobs` entitlement, and enforcing an entitlement is the
- * metering phase's job, not this one's — a runner that ignored the cap would be
- * a harder thing to add it to later.
+ * Jobs in a batch run one after another, so `max_concurrent_jobs` is enforced by
+ * the claim query rather than by this loop: the claim never hands back more rows
+ * than the cap allows, whoever asks and however large a batch they ask for.
+ *
+ * The budget is the one entitlement this file has anything to say about, and
+ * what it says is only reporting. A spent daily budget already makes the claim
+ * take nothing (src/queue/claim.ts); what a tick adds is the reason, stamped on
+ * the orders that stopped, because "refuses further claims mid-order" is only
+ * half of SPEC.md feature 5 — "and the order says so" is the other half. A tick
+ * that can claim again clears the stamp.
  */
 
 /** How long a claimed job's lease lasts before the reaper may take it back. */
@@ -69,6 +76,8 @@ export interface RunSummary {
   abandoned: number;
   /** Leases returned to the pool at the top of the tick. */
   reaped: number;
+  /** Orders newly stamped with why they stopped: the day's budget is spent. */
+  blocked: number;
 }
 
 /** The pinned definition an order runs under, joined to the order in one read. */
@@ -178,10 +187,21 @@ export async function runOnce(
     cancelled: 0,
     abandoned: 0,
     reaped: 0,
+    blocked: 0,
   };
 
   const reaped = await withTenant(engine, tenantId, (sql) => reapExpiredLeases(sql, random));
   summary.reaped = reaped.length;
+
+  // Asked before claiming so the answer can be reported, not so it can be
+  // obeyed: the claim enforces it either way. A tick that finds the budget spent
+  // stamps the orders that still have work in them and takes nothing.
+  const budget = await withTenant(engine, tenantId, (sql) => budgetStatus(sql));
+  if (budget.exhausted) {
+    summary.blocked = await withTenant(engine, tenantId, (sql) => blockOpenOrders(sql));
+    return summary;
+  }
+  await withTenant(engine, tenantId, (sql) => clearOrderBlocks(sql));
 
   const jobs = await withTenant(engine, tenantId, (sql) =>
     claimJobs(sql, { limit: batchSize, workerId: options.workerId, leaseMs }),
@@ -358,6 +378,7 @@ export async function runUntilIdle(
     cancelled: 0,
     abandoned: 0,
     reaped: 0,
+    blocked: 0,
   };
   for (let tick = 0; tick < maxTicks; tick++) {
     const summary = await runOnce(engine, tenantId, gateway, options);
