@@ -82,3 +82,13 @@ proves. `/metrics` sits behind the operator bearer and carries no tenant labels.
 The runner publishes transitions to an in-process bus when given one. Deliberately
 left: no page renders any of it, and nothing schedules the runner or serves the
 process.
+
+## Phase H — the tenant dashboard
+
+`GET /` serves one self-contained HTML file — no framework, no build step, no
+external request. The page is made of six panels: a workflow selector, a submit
+form, an orders table with per-item progress, a results view with a validated-
+JSON download, a usage meter, and the dead letter with requeue. Every panel is
+driven by a `/api/*` route behind the tenant bearer, and the tenant is never a
+request parameter. The operator console is ROADMAP row #7, and nothing schedules
+the runner or serves the process outside tests.

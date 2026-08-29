@@ -242,15 +242,15 @@ facts at the top of TASK_PHASE_H.md once, then grep your section header.
 - [x] §H6 — Write `test/api-orders.test.ts`: progress, per-item detail, the
       results download and cancel, with the stub gateway. Pattern file
       `test/metering.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §H7 — Write `test/api-dead.test.ts`: the dead-letter view, requeue once
+- [x] §H7 — Write `test/api-dead.test.ts`: the dead-letter view, requeue once
       then 404, and the usage meter. No runner. Pattern file
       `test/api-workflows.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §H8 — Write `test/page.test.ts`: `GET /` needs no bearer, carries the CSP,
       and the document fetches nothing external. Pattern file
       `test/server.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §H9 — Update `README.md`: Phase H status, one Layout line for
+- [x] §H9 — Update `README.md`: Phase H status, one Layout line for
       `src/dashboard/`, and the route list §H9 names. Every command shown must
       already work. Gate: `bash verify.sh` green.
-- [ ] §H10 — Close the phase: append a Phase H section to `STATUS.md`, flip
+- [x] §H10 — Close the phase: append a Phase H section to `STATUS.md`, flip
       `ROADMAP.md` row #6 to SHIPPED, and record the four reservations §H10
       names. Gate: `bash verify.sh` green.

@@ -71,8 +71,17 @@ exactly when the budget ran out.
 `/events` (tenant-scoped SSE stream of job and order transitions,
 authenticated with a tenant bearer token). The operator bearer is read
 from `WORKMILL_OPERATOR_TOKEN`; an unset value disables the operator
-routes. Still missing: neither page exists yet (the dashboard is
-ROADMAP row #6, the console row #7), and nothing schedules the runner.
+routes. Still missing: neither page exists yet (the console is
+ROADMAP row #7), and nothing schedules the runner.
+
+**Phase H** — the tenant dashboard is live: `GET /` serves one
+self-contained HTML file with no framework, no build step, and no
+external request. It pulls tenant data through the same `/api/*`
+routes that `/events` uses, all behind a tenant bearer token. The
+page holds the tenant token in the browser's `localStorage`; tokens
+are minted by tests today. Still missing: the operator console
+(ROADMAP row #7), and nothing schedules the runner or serves the
+process outside tests.
 
 ## Quickstart
 
@@ -120,6 +129,9 @@ bash scripts/live-check.sh    # real-gateway proof — needs a real gateway and 
 - `src/metering/` — the token ledger and the entitlement refusals
 - `src/server/` — the HTTP app (Fastify), the auth seam, and the operator bearer guard
 - `src/ops/` — events (in-process bus, SSE helpers), metrics (Prometheus exposition), the JSONL ops log
+- `src/dashboard/` — the tenant dashboard page (one self-contained HTML file with no framework, no build step, no external request) and its read models
 - `sql/` — numbered SQL migrations (append-only), including `sql/006_metering.sql` and `sql/007_api.sql`
 - `test/` — leak suite, seam tests, claim tests, migration tests
 - `scripts/` — `scrub-check.sh` public-repo gate
+
+Routes: `GET /`, `/api/me`, `/api/workflows`, `/api/orders` (GET and POST), `/api/orders/:id`, `/api/dead`, `/api/usage`.

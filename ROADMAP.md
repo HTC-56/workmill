@@ -10,7 +10,7 @@ are the one permitted exception to append-only docs.
 | 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | SHIPPED | A, E | claim proven in A; E adds lifecycle (heartbeat, backoff, dead-letter, requeue, cancel), runner tick, and durable `job_results` with output and token counts |
 | 4 | Model calls through the gateway (schema validation, bounded re-ask, usage capture) | SHIPPED | D, E | client, JSON Schema subset validator and the bounded re-ask with usage capture, proven against the stub; usage attributed to jobs in `job_results`; aggregating it is the ledger (row #5) |
 | 5 | Metering + entitlements at the data layer | SHIPPED | F | `token_ledger` under RLS, item caps as triggers, concurrency cap and daily budget in the claim query, budget exhaustion stamps orders; nothing serves it over HTTP yet |
-| 6 | Tenant dashboard (self-contained page) | PARTIAL | H | page and `/api/*` committed — one self-contained HTML file, six panels, no external request; Phase H's tests and the README still to land |
+| 6 | Tenant dashboard (self-contained page) | SHIPPED | H | one self-contained HTML file, six panels, no external request |
 | 7 | Operator console (grants, audit, fleet panel) | NOT BUILT | — | |
 | 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | SHIPPED | G | three routes, two bearer types, JSONL ops log, in-process event bus, and the tenant-scoped SSE stream are all committed and tested |
 | 9 | Demo mode + deploy-grade packaging (seed/reset, config, units, dual-engine CI, quickstart) | PARTIAL | A | dual-engine CI landed early — it is the only place the Postgres half of Phase A's proof runs; everything else pending |
@@ -73,3 +73,16 @@ planning lane declares PROJECT SPEC COMPLETE rather than inventing scope.
   against now, but no real-model corpus to measure;
 - **the budget refuses, it does not reserve** — a job already claimed finishes and
   is billed even if that takes the tenant past the budget.
+- **the page is served without a bearer** — it carries no tenant data and
+  fetches everything with a token the person pastes; the CLI helper that
+  mints that token belongs with the demo seed script;
+- **the live stream is read with `fetch`, not `EventSource`** — EventSource
+  cannot send an Authorization header and a bearer in a query string would be
+  logged; the page also polls every five seconds, so a browser that cannot
+  stream still updates;
+- **item parsing lives in the page's inline JS** — one-per-line and the CSV
+  column pick are the browser's; the API's contract is an array of strings,
+  and that is the half the tests cover;
+- **no page writes a workflow yet** — create, edit and archive exist in the
+  store but on no page; where workflow editing lives is the console phase's
+  call.
