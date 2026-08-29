@@ -175,7 +175,7 @@ new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 - [x] §F8 — Extend `test/limits.test.ts` with `budgetStatus`,
       `blockOpenOrders` and `clearOrderBlocks`. Keep every existing case.
       Gate: typecheck + test + scrub-check.
-- [ ] §F9 — Extend `test/claim.test.ts`: the claim query itself enforces
+- [x] §F9 — Extend `test/claim.test.ts`: the claim query itself enforces
       `max_concurrent_jobs` and refuses when the daily budget is spent. Keep
       every existing case. Gate: typecheck + test + scrub-check.
 - [ ] §F10 — Write `test/metering.test.ts`: the runner bills the ledger and
