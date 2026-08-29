@@ -95,3 +95,5 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-29T01:37:19	loop	qwen	commit	117	34991	46	13	1148	- [ ] §G7 — Write `test/metrics.test.ts`: `renderMetrics` on a hand-built
 2026-08-29T01:57:34	loop	qwen	commit	100	20589	39	11	1213	- [ ] §G8 — Write `test/server.test.ts`: `/healthz`, the `/metrics` operator
 2026-08-29T02:47:49	loop	qwen	commit	240	60122	92	28	3013	- [ ] §G9 — Write `test/sse.test.ts`: `/events` — the 401s, tenant-scoped
+2026-08-29T03:04:15	plan	claude	commit	88	141111	53	15	930	plan next phase
+2026-08-29T03:28:35	loop	qwen	commit	140	41930	53	16	1504	- [ ] §H3 — Write `test/dashboard-queries.test.ts`: the five read models in
