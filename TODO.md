@@ -155,3 +155,35 @@ header in TASK_PHASE_E.md.
 - [x] §E10 — Close the phase: append a Phase E section to `STATUS.md`, flip
       `ROADMAP.md` row #3 to SHIPPED, and add the four reservations §E10 names.
       Gate: `bash verify.sh` green.
+
+## Phase F: metering and entitlements — see TASK_PHASE_F.md
+
+§F1–§F4 are already committed (`sql/006_metering.sql`, `src/metering/ledger.ts`,
+`src/metering/limits.ts`, and the wiring in `finishJob`, `enqueueOrder`,
+`claimJobs` and `runOnce`). Every task below writes tests or docs — none needs
+new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
+
+- [ ] §F5 — Write `test/ledger.test.ts`: `recordUsage`, `tokensUsedToday`,
+      `tokensUsedForOrder`, `usageByDay` from `src/metering/ledger.ts`. Pattern
+      file `test/lifecycle.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §F6 — Write `test/limits.test.ts`: `readLimits` and the three
+      `assertSubmitAllowed` refusals, reached through `enqueueOrder`. Pattern
+      file `test/tenancy.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §F7 — Extend `test/limits.test.ts`: the two `sql/006` triggers refuse an
+      oversized item and an oversized order on a hand-written INSERT. Keep every
+      existing case. Gate: typecheck + test + scrub-check.
+- [ ] §F8 — Extend `test/limits.test.ts` with `budgetStatus`,
+      `blockOpenOrders` and `clearOrderBlocks`. Keep every existing case.
+      Gate: typecheck + test + scrub-check.
+- [ ] §F9 — Extend `test/claim.test.ts`: the claim query itself enforces
+      `max_concurrent_jobs` and refuses when the daily budget is spent. Keep
+      every existing case. Gate: typecheck + test + scrub-check.
+- [ ] §F10 — Write `test/metering.test.ts`: the runner bills the ledger and
+      stamps the order when the budget goes. Pattern file `test/runner.test.ts`.
+      Gate: typecheck + test + scrub-check.
+- [ ] §F11 — Update `README.md`: Phase F status, one Layout line for
+      `src/metering/`, one migrations line for `sql/006_metering.sql`. Every
+      command shown must already work. Gate: `bash verify.sh` green.
+- [ ] §F12 — Close the phase: append a Phase F section to `STATUS.md`, flip
+      `ROADMAP.md` row #5 to SHIPPED, and record the four reservations §F12
+      names. Gate: `bash verify.sh` green.

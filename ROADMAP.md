@@ -9,7 +9,7 @@ are the one permitted exception to append-only docs.
 | 2 | Workflows as tenant data (template + schema + model, versioned) | SHIPPED | C | definitions, versioning and the order pin are complete as tenant data; the pages that expose them are rows #6 and #7 |
 | 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | SHIPPED | A, E | claim proven in A; E adds lifecycle (heartbeat, backoff, dead-letter, requeue, cancel), runner tick, and durable `job_results` with output and token counts |
 | 4 | Model calls through the gateway (schema validation, bounded re-ask, usage capture) | SHIPPED | D, E | client, JSON Schema subset validator and the bounded re-ask with usage capture, proven against the stub; usage attributed to jobs in `job_results`; aggregating it is the ledger (row #5) |
-| 5 | Metering + entitlements at the data layer | NOT BUILT | — | |
+| 5 | Metering + entitlements at the data layer | PARTIAL | F | the engine is committed — `token_ledger` under RLS, item caps as triggers, the concurrency cap and the daily budget inside the claim query, and a blocked order that says why; the test and doc tail is Phase F's task list |
 | 6 | Tenant dashboard (self-contained page) | NOT BUILT | — | hero screenshot |
 | 7 | Operator console (grants, audit, fleet panel) | NOT BUILT | — | |
 | 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | NOT BUILT | — | |
