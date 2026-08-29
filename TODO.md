@@ -266,7 +266,7 @@ then grep your section header.
 - [x] §I4 — Write `test/operator-grants.test.ts`: the grants library, the pure
       countdown helpers, and the audit trail beside them. No HTTP server.
       Pattern file `test/auth.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §I5 — Write `test/operator-tenants.test.ts`: the operator's tenant table
+- [x] §I5 — Write `test/operator-tenants.test.ts`: the operator's tenant table
       and the two edits from `src/operator/tenants.ts`. No HTTP server.
       Pattern file `test/entitlements.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §I6 — Write `test/operator-fleet.test.ts`: `probeGateway` on an injected
