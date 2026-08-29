@@ -272,7 +272,7 @@ then grep your section header.
 - [x] §I6 — Write `test/operator-fleet.test.ts`: `probeGateway` on an injected
       fetch (both branches) and `collectFleet` on a migrated database. No
       network. Pattern file `test/metrics.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §I7 — Write `test/operator-api.test.ts`: the operator bearer wall, the 503
+- [x] §I7 — Write `test/operator-api.test.ts`: the operator bearer wall, the 503
       when unconfigured, the tenant table, provision, and the 404s. Pattern file
       `test/api-auth.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §I8 — Write `test/operator-writes.test.ts`: entitlement edits, state,
