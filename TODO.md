@@ -72,7 +72,7 @@ then grep your section header.
 - [x] §J9 — Update `README.md`: the Phase J paragraph, the ten-minute
       quickstart §J9 spells out, four new Layout lines, and only the nine
       commands that exist. Gate: `bash verify.sh` green.
-- [ ] §J10 — Write `docs/PROCESS.md`: three PoCs into one product, then the
+- [x] §J10 — Write `docs/PROCESS.md`: three PoCs into one product, then the
       loop that built it. One page, no invented statistics. Gate:
       `bash verify.sh` green.
 - [ ] §J11 — Close the phase: append a Phase J section to `STATUS.md`, flip
