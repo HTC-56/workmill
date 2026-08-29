@@ -81,3 +81,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T21:20:36	plan	claude	commit	91	122905	49	0	773	plan next phase
 2026-08-28T21:36:24	loop	qwen	commit	68	17798	26	6	998	- [ ] §F5 — Write `test/ledger.test.ts`: `recordUsage`, `tokensUsedToday`,
 2026-08-28T21:52:47	loop	qwen	commit	115	28498	46	10	982	- [ ] §F6 — Write `test/limits.test.ts`: `readLimits` and the three
+2026-08-28T22:24:38	loop	qwen	commit	124	24824	51	13	1910	- [ ] §F7 — Extend `test/limits.test.ts`: the two `sql/006` triggers refuse an
