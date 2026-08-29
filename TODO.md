@@ -236,7 +236,7 @@ facts at the top of TASK_PHASE_H.md once, then grep your section header.
 - [x] §H4 — Write `test/api-auth.test.ts`: every `/api/*` route 401s without a
       bearer, and `GET /api/me` carries the limits and the budget. Pattern file
       `test/server.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §H5 — Write `test/api-workflows.test.ts`: `GET /api/workflows` and the
+- [x] §H5 — Write `test/api-workflows.test.ts`: `GET /api/workflows` and the
       submit — 201, the three 400s, the 404 and the 422. Pattern file
       `test/api-auth.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §H6 — Write `test/api-orders.test.ts`: progress, per-item detail, the
