@@ -197,7 +197,7 @@ new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 new `src/` code. Read the seven facts at the top of TASK_PHASE_G.md once, then
 grep your section header.
 
-- [ ] §G4 — Write `test/auth.test.ts`: mint, resolve, revoke, expire and list
+- [x] §G4 — Write `test/auth.test.ts`: mint, resolve, revoke, expire and list
       bearer tokens from `src/server/auth.ts`. No HTTP server. Pattern file
       `test/members.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §G5 — Write `test/opslog.test.ts`: `redact`, `formatOpsLine` and the
