@@ -21,8 +21,14 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm test
+      # verify.sh IS the four gates: typecheck, test, the public-repo scrub and
+      # the README command lint. Running the script rather than its first two
+      # steps means a gate added to it is a gate CI gains for free — the
+      # reservation "the CI workflow will need a verify step once more gates
+      # exist", discharged.
+      - run: bash verify.sh
+      # The deployable artefact, built from the tree the gates just passed.
+      - run: pnpm build
 
   # The authoritative engine. Concurrency cases PGlite cannot express — two
   # claimants competing for the same rows — only ever run here.
