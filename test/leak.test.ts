@@ -32,6 +32,7 @@ const EXPECTED_TABLES = [
   'workflow_versions',
   'job_results',
   'token_ledger',
+  'api_tokens',
 ] as const;
 
 /** A unique address per fixture row; the users index is unique per tenant. */
@@ -199,6 +200,16 @@ async function seedRow(sql: Session, table: string, tenant: TestTenant): Promise
     );
     return row!.id;
   }
+  if (table === 'api_tokens') {
+    // No user: sql/007 makes `user_id` optional, and a token that acts for the
+    // tenant itself is the simpler row to seed.
+    const [row] = await sql.query<{ id: string }>(
+      `INSERT INTO api_tokens (tenant_id, name, token_hash)
+       VALUES ($1, $2, $3) RETURNING id`,
+      [tenant.id, `seed token for ${tenant.slug}`, fakeTokenHash()],
+    );
+    return row!.id;
+  }
   throw new Error(`leak suite has no fixture for tenant-scoped table "${table}" — add one here`);
 }
 
@@ -298,6 +309,13 @@ async function insertForeignRow(sql: Session, table: string, victim: TestTenant)
     );
     return;
   }
+  if (table === 'api_tokens') {
+    await sql.query(
+      `INSERT INTO api_tokens (tenant_id, name, token_hash) VALUES ($1, 'stolen', $2)`,
+      [victim.id, fakeTokenHash()],
+    );
+    return;
+  }
   throw new Error(`leak suite has no foreign-insert case for "${table}" — add one here`);
 }
 
@@ -382,6 +400,7 @@ describe.each(EXPECTED_TABLES)('tenant isolation on %s', (table) => {
     if (t === 'workflow_versions') return "model = 'hacked'";
     if (t === 'job_results') return "model = 'hacked'";
     if (t === 'token_ledger') return "model = 'hacked'";
+    if (t === 'api_tokens') return "name = 'hacked'";
     throw new Error(`leak suite has no UPDATE SET clause for "${t}" — add one here`);
   }
 

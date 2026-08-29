@@ -10,6 +10,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "fastify": "^5.12.1",
     "postgres": "^3.4.5"
   },
   "devDependencies": {
