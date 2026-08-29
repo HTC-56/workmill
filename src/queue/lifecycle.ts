@@ -1,5 +1,6 @@
 import type { Session } from '../db/engine.js';
 import type { TokenUsage } from '../gateway/client.js';
+import { recordUsage } from '../metering/ledger.js';
 
 /**
  * Everything that happens to a job after it is claimed (SPEC.md feature 3).
@@ -162,6 +163,12 @@ export async function heartbeat(
  * The upsert is at-least-once delivery made explicit: if this job already ran
  * once under a lease that expired, the second run replaces the first result
  * rather than adding a row the unique constraint would refuse.
+ *
+ * The token ledger is written in this same transaction (SPEC.md feature 5), so a
+ * job can never be reported as done without being billed, or billed without
+ * being done. Both a valid and an invalid answer are billed: the tokens were
+ * spent either way, and a budget that only counted successes would be a budget a
+ * broken workflow could spend without limit.
  */
 export async function finishJob(
   sql: Session,
@@ -210,6 +217,13 @@ export async function finishJob(
       Math.max(0, Math.round(outcome.latencyMs)),
     ],
   );
+
+  await recordUsage(sql, {
+    jobId,
+    orderId: job.order_id,
+    model: outcome.model,
+    usage: outcome.usage,
+  });
 
   return { state, orderClosed: await closeOrderIfComplete(sql, job.order_id) };
 }
