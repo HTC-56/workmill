@@ -108,3 +108,5 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-29T04:59:42	loop	qwen	commit	119	27937	49	9	497	- [ ] §I7 — Write `test/operator-api.test.ts`: the operator bearer wall, the 503
 2026-08-29T05:13:06	loop	qwen	no-op	145	42947	60	16	803	- [ ] §I8 — Write `test/operator-writes.test.ts`: entitlement edits, state,
 2026-08-29T05:20:05	loop	qwen	commit	134	33609	56	14	417	- [ ] §I9 — Write `test/console-page.test.ts`: `GET /operator` needs no bearer,
+2026-08-29T05:21:03	loop	qwen	no-op	69	10802	28	3	56	- [ ] §I10 — Update `README.md`: Phase I status, one Layout line each for
+2026-08-29T05:25:52	loop	qwen	commit	54	6671	21	4	289	- [ ] §I10 — Update `README.md`: Phase I status, one Layout line each for
