@@ -245,7 +245,7 @@ facts at the top of TASK_PHASE_H.md once, then grep your section header.
 - [x] §H7 — Write `test/api-dead.test.ts`: the dead-letter view, requeue once
       then 404, and the usage meter. No runner. Pattern file
       `test/api-workflows.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §H8 — Write `test/page.test.ts`: `GET /` needs no bearer, carries the CSP,
+- [x] §H8 — Write `test/page.test.ts`: `GET /` needs no bearer, carries the CSP,
       and the document fetches nothing external. Pattern file
       `test/server.test.ts`. Gate: typecheck + test + scrub-check.
 - [x] §H9 — Update `README.md`: Phase H status, one Layout line for
