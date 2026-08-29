@@ -60,6 +60,13 @@ and their token counts are durable in `job_results`. Nothing enforces a
 budget or a concurrency cap yet (that is the metering phase), and there
 is no HTTP surface — no server, no dashboard.
 
+**Phase F** — metering and entitlements are complete: a per-tenant token
+ledger records usage in the same transaction as the result, item caps
+and concurrency limits are enforced by triggers at the data layer, a
+daily budget stops new submissions when spent, and an order reports
+exactly when the budget ran out. Still missing: no HTTP surface, no
+dashboard, nothing schedules the runner.
+
 ## Quickstart
 
 ```bash
@@ -103,6 +110,7 @@ bash scripts/live-check.sh    # real-gateway proof — needs a real gateway and 
 - `src/workflows/` — workflow definitions, versioning, the `{{input}}` renderer, three example workflows
 - `src/gateway/` — the OpenAI-compatible client, the JSON Schema subset validator, the bounded re-ask
 - `src/runner/run.ts` — the tick: claim, call the gateway, record results and usage
-- `sql/` — numbered SQL migrations (append-only)
+- `src/metering/` — the token ledger and the entitlement refusals
+- `sql/` — numbered SQL migrations (append-only), including `sql/006_metering.sql`
 - `test/` — leak suite, seam tests, claim tests, migration tests
 - `scripts/` — `scrub-check.sh` public-repo gate

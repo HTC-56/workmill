@@ -181,7 +181,7 @@ new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 - [x] §F10 — Write `test/metering.test.ts`: the runner bills the ledger and
       stamps the order when the budget goes. Pattern file `test/runner.test.ts`.
       Gate: typecheck + test + scrub-check.
-- [ ] §F11 — Update `README.md`: Phase F status, one Layout line for
+- [x] §F11 — Update `README.md`: Phase F status, one Layout line for
       `src/metering/`, one migrations line for `sql/006_metering.sql`. Every
       command shown must already work. Gate: `bash verify.sh` green.
 - [ ] §F12 — Close the phase: append a Phase F section to `STATUS.md`, flip
