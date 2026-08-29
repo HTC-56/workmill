@@ -58,7 +58,7 @@ then grep your section header.
       the environment winning, and the two secrets the file refuses. Pure, no
       filesystem. Pattern file `test/schema.test.ts`. Gate: typecheck + test +
       scrub-check.
-- [ ] §J6 — Write `test/demo.test.ts`: `seedDemo`, the tight budgets,
+- [x] §J6 — Write `test/demo.test.ts`: `seedDemo`, the tight budgets,
       `clearDemo`'s cascade and its non-demo refusal, and `resetDemo`'s new
       tokens. Pattern file `test/tenancy.test.ts`. Gate: typecheck + test +
       scrub-check.
