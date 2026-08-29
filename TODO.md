@@ -187,3 +187,37 @@ new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 - [x] §F12 — Close the phase: append a Phase F section to `STATUS.md`, flip
       `ROADMAP.md` row #5 to SHIPPED, and record the four reservations §F12
       names. Gate: `bash verify.sh` green.
+
+## Phase G: the ops surface — see TASK_PHASE_G.md
+
+§G1–§G3 are already committed (`sql/007_api.sql`, `src/server/auth.ts`,
+`src/server/app.ts`, `src/ops/events.ts`, `src/ops/metrics.ts`,
+`src/ops/opslog.ts`, the runner's optional event bus, and the helper
+`test/helpers/server.ts`). Every task below writes tests or docs — none needs
+new `src/` code. Read the seven facts at the top of TASK_PHASE_G.md once, then
+grep your section header.
+
+- [ ] §G4 — Write `test/auth.test.ts`: mint, resolve, revoke, expire and list
+      bearer tokens from `src/server/auth.ts`. No HTTP server. Pattern file
+      `test/members.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §G5 — Write `test/opslog.test.ts`: `redact`, `formatOpsLine` and the
+      memory sink from `src/ops/opslog.ts`. No database. Pattern file
+      `test/render.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §G6 — Write `test/events.test.ts`: the `EventBus` filter, replay and SSE
+      frame helpers from `src/ops/events.ts`. No database. Pattern file
+      `test/render.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §G7 — Write `test/metrics.test.ts`: `renderMetrics` on a hand-built
+      snapshot plus `collectMetrics` against a migrated database. Pattern file
+      `test/ledger.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §G8 — Write `test/server.test.ts`: `/healthz`, the `/metrics` operator
+      guard and the 404, through `test/helpers/server.ts`. Pattern file
+      `test/runner.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §G9 — Write `test/sse.test.ts`: `/events` — the 401s, tenant-scoped
+      delivery, and unsubscribe on close. Pattern file `test/server.test.ts`.
+      Gate: typecheck + test + scrub-check.
+- [ ] §G10 — Update `README.md`: Phase G status, one Layout line each for
+      `src/server/` and `src/ops/`, one migrations line for `sql/007_api.sql`.
+      Every command shown must already work. Gate: `bash verify.sh` green.
+- [ ] §G11 — Close the phase: append a Phase G section to `STATUS.md`, flip
+      `ROADMAP.md` row #8 to SHIPPED, and record the four reservations §G11
+      names. Gate: `bash verify.sh` green.

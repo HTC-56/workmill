@@ -5,14 +5,14 @@ are the one permitted exception to append-only docs.
 
 | # | Feature (SPEC.md) | Status | Phase | Note |
 |---|---|---|---|---|
-| 1 | Tenancy core under RLS + leak-test suite | SHIPPED | A, B | five nouns built and leak suite covers every one of them |
+| 1 | Tenancy core under RLS + leak-test suite | SHIPPED | A, B, G | five nouns built and leak suite covers every one of them; Phase G's `api_tokens` brings it to twelve tenant-scoped tables |
 | 2 | Workflows as tenant data (template + schema + model, versioned) | SHIPPED | C | definitions, versioning and the order pin are complete as tenant data; the pages that expose them are rows #6 and #7 |
 | 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | SHIPPED | A, E | claim proven in A; E adds lifecycle (heartbeat, backoff, dead-letter, requeue, cancel), runner tick, and durable `job_results` with output and token counts |
 | 4 | Model calls through the gateway (schema validation, bounded re-ask, usage capture) | SHIPPED | D, E | client, JSON Schema subset validator and the bounded re-ask with usage capture, proven against the stub; usage attributed to jobs in `job_results`; aggregating it is the ledger (row #5) |
 | 5 | Metering + entitlements at the data layer | SHIPPED | F | `token_ledger` under RLS, item caps as triggers, concurrency cap and daily budget in the claim query, budget exhaustion stamps orders; nothing serves it over HTTP yet |
 | 6 | Tenant dashboard (self-contained page) | NOT BUILT | — | hero screenshot |
 | 7 | Operator console (grants, audit, fleet panel) | NOT BUILT | — | |
-| 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | NOT BUILT | — | |
+| 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | PARTIAL | G | routes, both bearers and the JSONL ledger are committed; Phase G's remaining tasks are their tests and the docs |
 | 9 | Demo mode + deploy-grade packaging (seed/reset, config, units, dual-engine CI, quickstart) | PARTIAL | A | dual-engine CI landed early — it is the only place the Postgres half of Phase A's proof runs; everything else pending |
 | — | docs/PROCESS.md (three PoCs → one product, the loop story) | NOT BUILT | — | written near the end, when there is a ledger to excerpt |
 
