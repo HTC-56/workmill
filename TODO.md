@@ -169,7 +169,7 @@ new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 - [x] §F6 — Write `test/limits.test.ts`: `readLimits` and the three
       `assertSubmitAllowed` refusals, reached through `enqueueOrder`. Pattern
       file `test/tenancy.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §F7 — Extend `test/limits.test.ts`: the two `sql/006` triggers refuse an
+- [x] §F7 — Extend `test/limits.test.ts`: the two `sql/006` triggers refuse an
       oversized item and an oversized order on a hand-written INSERT. Keep every
       existing case. Gate: typecheck + test + scrub-check.
 - [ ] §F8 — Extend `test/limits.test.ts` with `budgetStatus`,
