@@ -230,7 +230,7 @@ grep your section header.
 task below writes tests or docs — none needs new `src/` code. Read the eight
 facts at the top of TASK_PHASE_H.md once, then grep your section header.
 
-- [ ] §H3 — Write `test/dashboard-queries.test.ts`: the five read models in
+- [x] §H3 — Write `test/dashboard-queries.test.ts`: the five read models in
       `src/dashboard/queries.ts` plus `clampPageSize`. No HTTP server. Pattern
       file `test/ledger.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §H4 — Write `test/api-auth.test.ts`: every `/api/*` route 401s without a
