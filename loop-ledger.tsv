@@ -99,3 +99,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-29T03:28:35	loop	qwen	commit	140	41930	53	16	1504	- [ ] §H3 — Write `test/dashboard-queries.test.ts`: the five read models in
 2026-08-29T03:35:01	loop	qwen	commit	191	54373	74	20	384	- [ ] §H4 — Write `test/api-auth.test.ts`: every `/api/*` route 401s without a
 2026-08-29T03:40:23	loop	qwen	no-op	171	36604	74	17	321	- [ ] §H5 — Write `test/api-workflows.test.ts`: `GET /api/workflows` and the
+2026-08-29T03:53:30	loop	qwen	commit	219	58300	92	26	785	- [ ] §H6 — Write `test/api-orders.test.ts`: progress, per-item detail, the
