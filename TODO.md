@@ -178,7 +178,7 @@ new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 - [x] §F9 — Extend `test/claim.test.ts`: the claim query itself enforces
       `max_concurrent_jobs` and refuses when the daily budget is spent. Keep
       every existing case. Gate: typecheck + test + scrub-check.
-- [ ] §F10 — Write `test/metering.test.ts`: the runner bills the ledger and
+- [x] §F10 — Write `test/metering.test.ts`: the runner bills the ledger and
       stamps the order when the budget goes. Pattern file `test/runner.test.ts`.
       Gate: typecheck + test + scrub-check.
 - [ ] §F11 — Update `README.md`: Phase F status, one Layout line for
