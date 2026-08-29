@@ -275,7 +275,7 @@ then grep your section header.
 - [x] §I7 — Write `test/operator-api.test.ts`: the operator bearer wall, the 503
       when unconfigured, the tenant table, provision, and the 404s. Pattern file
       `test/api-auth.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §I8 — Write `test/operator-writes.test.ts`: entitlement edits, state,
+- [x] §I8 — Write `test/operator-writes.test.ts`: entitlement edits, state,
       grants over HTTP, and the tenant reading its own trail. Pattern file
       `test/operator-api.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §I9 — Write `test/console-page.test.ts`: `GET /operator` needs no bearer,
