@@ -87,3 +87,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T23:41:09	loop	qwen	commit	269	99406	103	30	1249	- [ ] §F9 — Extend `test/claim.test.ts`: the claim query itself enforces
 2026-08-29T00:03:27	loop	qwen	commit	131	31180	53	13	1336	- [ ] §F10 — Write `test/metering.test.ts`: the runner bills the ledger and
 2026-08-29T00:14:28	loop	qwen	no-op	103	19477	39	8	659	- [ ] §F11 — Update `README.md`: Phase F status, one Layout line for
+2026-08-29T00:31:34	loop	qwen	commit	86	13567	32	8	1025	- [ ] §F12 — Close the phase: append a Phase F section to `STATUS.md`, flip
