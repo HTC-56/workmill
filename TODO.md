@@ -254,3 +254,36 @@ facts at the top of TASK_PHASE_H.md once, then grep your section header.
 - [x] §H10 — Close the phase: append a Phase H section to `STATUS.md`, flip
       `ROADMAP.md` row #6 to SHIPPED, and record the four reservations §H10
       names. Gate: `bash verify.sh` green.
+
+## Phase I: the operator console — see TASK_PHASE_I.md
+
+§I1–§I3 are already committed (`sql/008_operator.sql`, `src/operator/*`,
+`src/server/operator-api.ts`, `src/console/page.ts`, the `GET /operator` route
+and the two tenant-side routes). Every task below writes tests or docs — none
+needs new `src/` code. Read the nine facts at the top of TASK_PHASE_I.md once,
+then grep your section header.
+
+- [ ] §I4 — Write `test/operator-grants.test.ts`: the grants library, the pure
+      countdown helpers, and the audit trail beside them. No HTTP server.
+      Pattern file `test/auth.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §I5 — Write `test/operator-tenants.test.ts`: the operator's tenant table
+      and the two edits from `src/operator/tenants.ts`. No HTTP server.
+      Pattern file `test/entitlements.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §I6 — Write `test/operator-fleet.test.ts`: `probeGateway` on an injected
+      fetch (both branches) and `collectFleet` on a migrated database. No
+      network. Pattern file `test/metrics.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §I7 — Write `test/operator-api.test.ts`: the operator bearer wall, the 503
+      when unconfigured, the tenant table, provision, and the 404s. Pattern file
+      `test/api-auth.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §I8 — Write `test/operator-writes.test.ts`: entitlement edits, state,
+      grants over HTTP, and the tenant reading its own trail. Pattern file
+      `test/operator-api.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §I9 — Write `test/console-page.test.ts`: `GET /operator` needs no bearer,
+      carries the CSP, and the document fetches nothing external. Pattern file
+      `test/page.test.ts`. Gate: typecheck + test + scrub-check.
+- [ ] §I10 — Update `README.md`: Phase I status, one Layout line each for
+      `src/operator/` and `src/console/`, and the routes §I10 names. Every
+      command shown must already work. Gate: `bash verify.sh` green.
+- [ ] §I11 — Close the phase: append a Phase I section to `STATUS.md`, flip
+      `ROADMAP.md` row #7 to SHIPPED, and record the four reservations §I11
+      names. Gate: `bash verify.sh` green.

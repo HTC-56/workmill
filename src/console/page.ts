@@ -408,7 +408,7 @@ export const CONSOLE_HTML = `<!doctype html>
 
   $('connect').addEventListener('click', function () {
     token = $('token').value.trim();
-    try { window.localStorage.setItem(KEY, token); } catch (e) { /* private mode */ }
+    try { localStorage.setItem(KEY, token); } catch (e) { /* private mode */ }
     refresh();
   });
 
@@ -472,7 +472,7 @@ export const CONSOLE_HTML = `<!doctype html>
   });
 
   try {
-    var saved = window.localStorage.getItem(KEY);
+    var saved = localStorage.getItem(KEY);
     if (saved) { token = saved; $('token').value = saved; }
   } catch (e) { /* private mode */ }
 
