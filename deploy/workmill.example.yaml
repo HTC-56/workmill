@@ -1,0 +1,46 @@
+# workmill configuration — copy to workmill.yaml (or /etc/workmill/workmill.yaml)
+#
+# Every setting here has a working default, so this whole file is optional: a
+# clean clone with no config at all runs on PGlite against a gateway on
+# localhost. Delete any section you do not need.
+#
+# The environment always wins over this file, so one unit file can serve several
+# instances. Secrets are environment-ONLY and are refused if written here:
+#
+#   GATEWAY_API_KEY           the gateway's key, if it wants one
+#   WORKMILL_OPERATOR_TOKEN   the operator bearer; unset disables /metrics,
+#                             /api/operator/* and everything the console does
+
+server:
+  # Loopback by default. Put a reverse proxy in front rather than binding wide.
+  host: 127.0.0.1
+  port: 3000
+
+database:
+  # Omit (or leave null) to use PGlite in-process — no database to install.
+  # A real deployment names a Postgres the app role can reach:
+  # url: postgres://workmill@localhost:5432/workmill
+  url: null
+
+gateway:
+  # The one outbound HTTP destination in the whole of src/.
+  baseUrl: http://localhost:8080/v1
+  timeoutMs: 60000
+  # Logical name -> the name your gateway knows. Workflows store the logical
+  # name, so swapping the model behind 'default' is this edit, not a migration.
+  models:
+    default: qwen2.5-7b-instruct
+    fast: qwen2.5-3b-instruct
+
+runner:
+  # false leaves the queue to something else — a systemd timer, or a test.
+  enabled: true
+  # Recorded on every job this process claims, so an operator can see who has it.
+  workerId: workmill-1
+  intervalMs: 2000
+  batchSize: 4
+  leaseMs: 30000
+
+ops:
+  # The JSONL ops ledger. Omit to discard it.
+  logPath: /var/log/workmill/ops.jsonl
