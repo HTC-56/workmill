@@ -54,7 +54,7 @@ then grep your section header.
       accepts and the eight things it refuses, each on the right line. No
       database. Pattern file `test/render.test.ts`. Gate: typecheck + test +
       scrub-check.
-- [ ] §J5 — Write `test/config.test.ts`: `buildConfig` — defaults, the file,
+- [x] §J5 — Write `test/config.test.ts`: `buildConfig` — defaults, the file,
       the environment winning, and the two secrets the file refuses. Pure, no
       filesystem. Pattern file `test/schema.test.ts`. Gate: typecheck + test +
       scrub-check.
