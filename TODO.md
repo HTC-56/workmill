@@ -50,7 +50,7 @@ scripts, the CI verify step). Every task below writes tests or docs — none
 needs new `src/` code. Read the nine facts at the top of TASK_PHASE_J.md once,
 then grep your section header.
 
-- [ ] §J4 — Write `test/yaml.test.ts`: the YAML subset `src/config/yaml.ts`
+- [x] §J4 — Write `test/yaml.test.ts`: the YAML subset `src/config/yaml.ts`
       accepts and the eight things it refuses, each on the right line. No
       database. Pattern file `test/render.test.ts`. Gate: typecheck + test +
       scrub-check.
