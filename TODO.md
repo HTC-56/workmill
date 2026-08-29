@@ -75,6 +75,6 @@ then grep your section header.
 - [x] §J10 — Write `docs/PROCESS.md`: three PoCs into one product, then the
       loop that built it. One page, no invented statistics. Gate:
       `bash verify.sh` green.
-- [ ] §J11 — Close the phase: append a Phase J section to `STATUS.md`, flip
+- [x] §J11 — Close the phase: append a Phase J section to `STATUS.md`, flip
       `ROADMAP.md` row #9 and the `docs/PROCESS.md` row to SHIPPED, and record
       the four reservations §J11 names. Gate: `bash verify.sh` green.

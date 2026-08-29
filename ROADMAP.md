@@ -13,8 +13,8 @@ are the one permitted exception to append-only docs.
 | 6 | Tenant dashboard (self-contained page) | SHIPPED | H | one self-contained HTML file, six panels, no external request |
 | 7 | Operator console (grants, audit, fleet panel) | SHIPPED | I | page, nine operator routes, grants with a required reason and a TTL, and the tenant-readable audit trail are committed; all tests and the close are done |
 | 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | SHIPPED | G | three routes, two bearer types, JSONL ops log, in-process event bus, and the tenant-scoped SSE stream are all committed and tested |
-| 9 | Demo mode + deploy-grade packaging (seed/reset, config, units, dual-engine CI, quickstart) | PARTIAL | A, J | Phase J commits the process (`src/main.ts`, the runner schedule), the YAML config, the demo seed/reset, the four CLI commands and `pnpm build`; its tests, the units, the quickstart and the close are the task list |
-| — | docs/PROCESS.md (three PoCs → one product, the loop story) | PARTIAL | J | written in Phase J (§J10), now that there is a ledger to excerpt |
+| 9 | Demo mode + deploy-grade packaging (seed/reset, config, units, dual-engine CI, quickstart) | SHIPPED | J | process, config, demo seed/reset, CLI commands, units, quickstart, and docs/PROCESS.md are all committed |
+| — | docs/PROCESS.md (three PoCs → one product, the loop story) | SHIPPED | J | written in Phase J (§J10), all facts verifiable against repo files |
 
 When every row reads SHIPPED and verify.sh is green, the project is done — the
 planning lane declares PROJECT SPEC COMPLETE rather than inventing scope.
@@ -100,3 +100,16 @@ planning lane declares PROJECT SPEC COMPLETE rather than inventing scope.
 - **the console holds the operator bearer in `localStorage`** — the same seam
   the dashboard uses, and the CLI helper that mints tokens still belongs with
   the demo seed script.
+- **the demo scripts refuse the default engine** — `openPglite()` takes no
+  data directory, so its database dies with the process; seeding into memory
+  would print tokens for tenants nobody can reach, and the refusal is the
+  honest answer rather than a warning that reads as success;
+- **the config reader is a YAML SUBSET** — mappings, scalar lists, comments
+  and five scalar types, with everything else refused by line number;
+  widening it waits until a real deployment needs a feature it lacks;
+- **a sweep is series, not parallel** — tenants tick one after another
+  because PGlite serves one connection, so fleet throughput on a real
+  Postgres is left on the table until someone measures that it matters;
+- **`pnpm build` is not a `verify.sh` gate** — CI runs it, and a clean
+  `--noEmit` typecheck is not quite a proof that the emit succeeds; folding
+  it into `verify.sh` waits until that difference bites once.

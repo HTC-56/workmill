@@ -103,3 +103,15 @@ JSON download, a usage meter, and the dead letter with requeue. Every panel is
 driven by a `/api/*` route behind the tenant bearer, and the tenant is never a
 request parameter. The operator console is ROADMAP row #7, and nothing schedules
 the runner or serves the process outside tests.
+
+## Phase J — demo mode and deploy-grade packaging
+
+workmill is a process now — `src/main.ts` opens the engine, migrates, serves both
+pages and the API, and ticks the runner on a non-overlapping timer, stopping
+runner-then-listener-then-engine. Config is one YAML file with an environment
+override for every field and two secrets the file refuses to hold. The demo is two
+ordinary tenants with small entitlements, seeded and reset by scripts that refuse
+to run against the in-process engine because its database dies with the process.
+`deploy/` carries example units and CI now runs `verify.sh` and `pnpm build`.
+Deliberately left: the demo DEPLOYMENT is human-gated (host, tunnel, public URL,
+reset cadence — DECISIONS.md), and `DEFAULT_ENTITLEMENTS` is still provisional.
