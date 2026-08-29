@@ -12,7 +12,13 @@ import {
 } from '../queue/lifecycle.js';
 import { GatewayAbortedError, GatewayError, type GatewayConfig } from '../gateway/client.js';
 import { runCompletion } from '../gateway/complete.js';
-import { blockOpenOrders, budgetStatus, clearOrderBlocks } from '../metering/limits.js';
+import {
+  BUDGET_EXHAUSTED,
+  blockOpenOrders,
+  budgetStatus,
+  clearOrderBlocks,
+} from '../metering/limits.js';
+import type { EventBus } from '../ops/events.js';
 
 /**
  * The job runner (SPEC.md feature 3): the loop that turns claimed jobs into
@@ -59,6 +65,15 @@ export interface RunnerOptions {
   heartbeatMs?: number;
   /** Injectable for tests, so a backoff can be asserted rather than sampled. */
   random?: () => number;
+  /**
+   * Where transitions are announced, for `GET /events` (SPEC.md feature 8).
+   *
+   * Optional, and the runner behaves identically without one: publishing is
+   * reporting, never control flow. Every publish happens AFTER the transaction
+   * that made the transition durable has committed, so the stream can never
+   * describe a state the database would deny.
+   */
+  events?: EventBus;
 }
 
 /** What one tick did. Every claimed job lands in exactly one of these buckets. */
@@ -199,6 +214,26 @@ export async function runOnce(
   const budget = await withTenant(engine, tenantId, (sql) => budgetStatus(sql));
   if (budget.exhausted) {
     summary.blocked = await withTenant(engine, tenantId, (sql) => blockOpenOrders(sql));
+    if (summary.blocked > 0 && options.events) {
+      // Read back the ids rather than changing what blockOpenOrders returns: an
+      // order that says why it stopped is only useful to a dashboard if the
+      // dashboard is told which order, and this path runs once per exhausted
+      // tick, not once per job.
+      const blocked = await withTenant(engine, tenantId, (sql) =>
+        sql.query<{ id: string }>(
+          "SELECT id FROM work_orders WHERE state = 'open' AND blocked_reason IS NOT NULL",
+        ),
+      );
+      for (const order of blocked) {
+        options.events.publish({
+          kind: 'order',
+          tenantId,
+          id: order.id,
+          state: 'blocked',
+          reason: BUDGET_EXHAUSTED,
+        });
+      }
+    }
     return summary;
   }
   await withTenant(engine, tenantId, (sql) => clearOrderBlocks(sql));
@@ -209,11 +244,20 @@ export async function runOnce(
   summary.claimed = jobs.length;
 
   for (const job of jobs) {
+    options.events?.publish({
+      kind: 'job',
+      tenantId,
+      id: job.id,
+      orderId: job.order_id,
+      idx: job.idx,
+      state: 'running',
+    });
     await runClaimedJob(engine, tenantId, gateway, job, summary, {
       workerId: options.workerId,
       leaseMs,
       heartbeatMs,
       random,
+      ...(options.events ? { events: options.events } : {}),
     });
   }
 
@@ -225,6 +269,7 @@ interface JobRunSettings {
   leaseMs: number;
   heartbeatMs: number;
   random: () => number;
+  events?: EventBus;
 }
 
 async function runClaimedJob(
@@ -238,6 +283,19 @@ async function runClaimedJob(
   const definition = await withTenant(engine, tenantId, (sql) =>
     loadPinnedDefinition(sql, job.order_id),
   );
+
+  /** Announce a durable transition. Called only after its write has committed. */
+  const announce = (state: string, reason?: string): void => {
+    settings.events?.publish({
+      kind: 'job',
+      tenantId,
+      id: job.id,
+      orderId: job.order_id,
+      idx: job.idx,
+      state,
+      ...(reason === undefined ? {} : { reason }),
+    });
+  };
 
   const controller = new AbortController();
   let lostLease = false;
@@ -300,8 +358,10 @@ async function runClaimedJob(
   if (cancelRequested) {
     // "RUNNING aborts the in-flight model call and records that it did."
     const marked = await withTenant(engine, tenantId, (sql) => markCancelled(sql, job.id));
-    if (marked) summary.cancelled++;
-    else summary.abandoned++;
+    if (marked) {
+      summary.cancelled++;
+      announce('cancelled');
+    } else summary.abandoned++;
     return;
   }
 
@@ -319,6 +379,11 @@ async function runClaimedJob(
     );
     if (outcome.state === 'dead') summary.dead++;
     else summary.retried++;
+    // 'retrying' rather than 'pending': the row IS pending, but what a dashboard
+    // needs to show is that this item failed and will come back. The reason is
+    // the error's CLASS, never its message — a gateway that echoes a prompt back
+    // in its error text must not put tenant content on a stream.
+    announce(outcome.state === 'dead' ? 'dead' : 'retrying', error.name);
     return;
   }
 
@@ -352,6 +417,10 @@ async function runClaimedJob(
   );
   if (finished.state === 'succeeded') summary.succeeded++;
   else summary.failed++;
+  announce(finished.state, completion.ok ? undefined : completion.reason);
+  if (finished.orderClosed) {
+    settings.events?.publish({ kind: 'order', tenantId, id: job.order_id, state: 'done' });
+  }
 }
 
 /**
