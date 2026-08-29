@@ -84,3 +84,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-28T22:24:38	loop	qwen	commit	124	24824	51	13	1910	- [ ] §F7 — Extend `test/limits.test.ts`: the two `sql/006` triggers refuse an
 2026-08-28T22:41:49	loop	qwen	no-op	118	29865	47	14	1030	- [ ] §F8 — Extend `test/limits.test.ts` with `budgetStatus`,
 2026-08-28T23:20:18	loop	qwen	no-op	243	96575	91	27	2309	- [ ] §F8 — Extend `test/limits.test.ts` with `budgetStatus`,
+2026-08-28T23:41:09	loop	qwen	commit	269	99406	103	30	1249	- [ ] §F9 — Extend `test/claim.test.ts`: the claim query itself enforces
