@@ -1,4 +1,5 @@
 import type { Session } from '../db/engine.js';
+import { assertSubmitAllowed } from '../metering/limits.js';
 
 /**
  * Submitting a work order: one order row plus one job row per item, in a single
@@ -6,8 +7,12 @@ import type { Session } from '../db/engine.js';
  * their submitted position in `idx` — results are reported in the order the
  * tenant sent them, not the order they happened to finish in.
  *
- * Item and count caps are entitlement-enforced at the data layer in a later
- * phase; this function is the row-writing half only.
+ * Item and count caps are entitlement-enforced twice, and deliberately so. This
+ * function asks first, so a caller gets a typed `EntitlementRefusedError` before
+ * a single row is written; the BEFORE INSERT triggers in sql/006 refuse the same
+ * rows at the database, so a limit is a property of the data and not of whoever
+ * is in front of it. The model the pinned version names is checked here only —
+ * refusing at submit is the only refusal a tenant can act on.
  *
  * An order pins the workflow version it was submitted against (SPEC.md feature
  * 2: every run pins its version). The order carries the pin, not each job:
@@ -38,6 +43,8 @@ export async function enqueueOrder(
   if (!options.workflowVersionId) {
     throw new RangeError('a work order must pin the workflow version it runs under');
   }
+
+  await assertSubmitAllowed(sql, items, options.workflowVersionId);
 
   const [order] = await sql.query<{ id: string }>(
     `INSERT INTO work_orders (tenant_id, item_count, workflow_version_id)

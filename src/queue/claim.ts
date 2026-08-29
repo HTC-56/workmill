@@ -21,6 +21,15 @@ import type { Session } from '../db/engine.js';
  *
  * Every call runs inside withTenant(), so RLS scopes the inner select as well —
  * a claim can only ever see, and can only ever take, the current tenant's jobs.
+ *
+ * Since the metering phase this query is also where two entitlements are
+ * enforced (SPEC.md feature 5: "enforced by constraints, policies, and the claim
+ * query, not UI checks"). `max_concurrent_jobs` bounds how many rows it may take
+ * given how many are already running, and a spent daily token budget makes it
+ * take none at all — both computed inside the same statement, from the tenant's
+ * own entitlements row, so a caller cannot claim its way past a limit by not
+ * asking about it. A tenant with no entitlements row has no limits; sql/006
+ * names that seam.
  */
 
 export interface ClaimedJob {
@@ -64,14 +73,39 @@ export async function claimJobs(sql: Session, opts: ClaimOptions): Promise<Claim
     // undefined in Postgres, and it really does come back shuffled. Wrapping the
     // update in a second CTE and sorting its output by the same keys makes the
     // returned order match the claim order, so no caller has to know this.
-    `WITH candidates AS MATERIALIZED (
+    `WITH limits AS MATERIALIZED (
+       -- RLS exposes at most one row here: the current tenant's. No row means an
+       -- unprovisioned tenant, and every expression below reads NULL from it.
+       SELECT e.max_concurrent_jobs AS cap, e.daily_token_budget AS budget
+         FROM entitlements AS e
+     ),
+     spend AS MATERIALIZED (
+       SELECT COALESCE(sum(l.total_tokens), 0) AS used
+         FROM token_ledger AS l
+        WHERE l.usage_day = ((now() AT TIME ZONE 'UTC')::date)
+     ),
+     allowance AS MATERIALIZED (
+       -- How many rows this claim is allowed to take. LEAST ignores NULL
+       -- arguments in Postgres, which is exactly the behaviour wanted here: with
+       -- no entitlements row the cap term is NULL and the caller's own limit
+       -- stands, and with one the smaller of the two wins.
+       SELECT CASE
+                WHEN EXISTS (SELECT 1 FROM limits WHERE budget <= (SELECT used FROM spend))
+                  THEN 0
+                ELSE GREATEST(0, LEAST(
+                       $1::bigint,
+                       (SELECT cap FROM limits)
+                         - (SELECT count(*) FROM jobs WHERE state = 'running')))
+              END AS n
+     ),
+     candidates AS MATERIALIZED (
        SELECT c.id
          FROM jobs AS c
         WHERE c.state = 'pending'
           AND c.run_at <= now()
         ORDER BY c.run_at, c.created_at, c.order_id, c.idx
           FOR UPDATE SKIP LOCKED
-        LIMIT $1
+        LIMIT (SELECT n FROM allowance)
      ),
      claimed AS (
        UPDATE jobs AS j
