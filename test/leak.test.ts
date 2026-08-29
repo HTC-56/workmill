@@ -31,6 +31,7 @@ const EXPECTED_TABLES = [
   'workflows',
   'workflow_versions',
   'job_results',
+  'token_ledger',
 ] as const;
 
 /** A unique address per fixture row; the users index is unique per tenant. */
@@ -157,6 +158,26 @@ async function seedRow(sql: Session, table: string, tenant: TestTenant): Promise
     );
     return row!.id;
   }
+  if (table === 'token_ledger') {
+    // Inserts its own order and job, the way the job_results fixture does: the
+    // ledger carries a composite foreign key to both.
+    const [order] = await sql.query<{ id: string }>(
+      `INSERT INTO work_orders (tenant_id, item_count, workflow_version_id)
+       VALUES ($1, 1, $2) RETURNING id`,
+      [tenant.id, await seedVersion(sql, tenant)],
+    );
+    const [job] = await sql.query<{ id: string }>(
+      'INSERT INTO jobs (tenant_id, order_id, idx, input) VALUES ($1, $2, 0, $3) RETURNING id',
+      [tenant.id, order!.id, `ledger seed for ${tenant.slug}`],
+    );
+    const [row] = await sql.query<{ id: string }>(
+      `INSERT INTO token_ledger
+         (tenant_id, job_id, order_id, model, prompt_tokens, completion_tokens, total_tokens)
+       VALUES ($1, $2, $3, 'default', 7, 5, 12) RETURNING id`,
+      [tenant.id, job!.id, order!.id],
+    );
+    return row!.id;
+  }
   if (table === 'workflows') {
     const [row] = await sql.query<{ id: string }>(
       'INSERT INTO workflows (tenant_id, slug, name) VALUES ($1, $2, $3) RETURNING id',
@@ -267,6 +288,16 @@ async function insertForeignRow(sql: Session, table: string, victim: TestTenant)
     );
     return;
   }
+  if (table === 'token_ledger') {
+    // A real job and a real order of the victim's, so both composite foreign
+    // keys are satisfied and RLS is the only thing left to refuse the row.
+    await sql.query(
+      `INSERT INTO token_ledger (tenant_id, job_id, order_id, model, total_tokens)
+       VALUES ($1, $2, $3, 'stolen', 99)`,
+      [victim.id, seeded.get('jobs')!.bob, seeded.get('work_orders')!.bob],
+    );
+    return;
+  }
   throw new Error(`leak suite has no foreign-insert case for "${table}" — add one here`);
 }
 
@@ -350,6 +381,7 @@ describe.each(EXPECTED_TABLES)('tenant isolation on %s', (table) => {
     if (t === 'workflows') return "name = 'hacked'";
     if (t === 'workflow_versions') return "model = 'hacked'";
     if (t === 'job_results') return "model = 'hacked'";
+    if (t === 'token_ledger') return "model = 'hacked'";
     throw new Error(`leak suite has no UPDATE SET clause for "${t}" — add one here`);
   }
 
