@@ -200,7 +200,7 @@ grep your section header.
 - [x] §G4 — Write `test/auth.test.ts`: mint, resolve, revoke, expire and list
       bearer tokens from `src/server/auth.ts`. No HTTP server. Pattern file
       `test/members.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §G5 — Write `test/opslog.test.ts`: `redact`, `formatOpsLine` and the
+- [x] §G5 — Write `test/opslog.test.ts`: `redact`, `formatOpsLine` and the
       memory sink from `src/ops/opslog.ts`. No database. Pattern file
       `test/render.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §G6 — Write `test/events.test.ts`: the `EventBus` filter, replay and SSE
