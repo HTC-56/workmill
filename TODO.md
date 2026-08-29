@@ -203,7 +203,7 @@ grep your section header.
 - [x] §G5 — Write `test/opslog.test.ts`: `redact`, `formatOpsLine` and the
       memory sink from `src/ops/opslog.ts`. No database. Pattern file
       `test/render.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §G6 — Write `test/events.test.ts`: the `EventBus` filter, replay and SSE
+- [x] §G6 — Write `test/events.test.ts`: the `EventBus` filter, replay and SSE
       frame helpers from `src/ops/events.ts`. No database. Pattern file
       `test/render.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §G7 — Write `test/metrics.test.ts`: `renderMetrics` on a hand-built
