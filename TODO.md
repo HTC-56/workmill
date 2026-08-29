@@ -166,7 +166,7 @@ new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 - [x] §F5 — Write `test/ledger.test.ts`: `recordUsage`, `tokensUsedToday`,
       `tokensUsedForOrder`, `usageByDay` from `src/metering/ledger.ts`. Pattern
       file `test/lifecycle.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §F6 — Write `test/limits.test.ts`: `readLimits` and the three
+- [x] §F6 — Write `test/limits.test.ts`: `readLimits` and the three
       `assertSubmitAllowed` refusals, reached through `enqueueOrder`. Pattern
       file `test/tenancy.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §F7 — Extend `test/limits.test.ts`: the two `sql/006` triggers refuse an
