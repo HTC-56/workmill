@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
+import Fastify, { type FastifyInstance } from 'fastify';
 import type { Engine } from '../db/engine.js';
 import { withAdmin } from '../seam/withTenant.js';
 import {
@@ -11,7 +11,9 @@ import {
 } from '../ops/events.js';
 import { collectMetrics, renderMetrics } from '../ops/metrics.js';
 import { nullOpsLog, type OpsLog } from '../ops/opslog.js';
-import { isOperator, parseBearer, resolveApiToken, type TokenIdentity } from './auth.js';
+import { requireOperator, requireTenant } from './guards.js';
+import { registerTenantApi } from './api.js';
+import { DASHBOARD_CSP, DASHBOARD_HTML } from '../dashboard/page.js';
 
 /**
  * The HTTP surface (SPEC.md feature 8).
@@ -35,9 +37,10 @@ import { isOperator, parseBearer, resolveApiToken, type TokenIdentity } from './
  * the safe reading wins. With no operator token configured the route refuses
  * with 503 — a missing secret means "off", never "unguarded".
  *
- * Routes for the dashboard and the operator console (ROADMAP rows #6 and #7)
- * register onto the same instance in their own phases; this file stays the ops
- * surface plus the two guards they will reuse.
+ * The dashboard (ROADMAP row #6) registers onto the same instance from
+ * `registerTenantApi`; the operator console (row #7) will do the same in its
+ * own phase. The two guards both surfaces share moved to `./guards.ts` when the
+ * second caller appeared.
  */
 
 /** Prometheus' text exposition content type, version included as it expects. */
@@ -67,54 +70,6 @@ export interface WorkmillApp {
   readonly fastify: FastifyInstance;
   readonly bus: EventBus;
   readonly opsLog: OpsLog;
-}
-
-declare module 'fastify' {
-  interface FastifyRequest {
-    /** Set by `requireTenant` once a bearer has resolved. */
-    identity?: TokenIdentity;
-  }
-}
-
-/**
- * Resolve the tenant bearer, or answer 401 and return null.
- *
- * A missing bearer, a made-up bearer, a revoked one and an expired one all get
- * the same reply. Distinguishing them would turn the 401 into an oracle for
- * which tokens once existed.
- */
-async function requireTenant(
-  engine: Engine,
-  request: FastifyRequest,
-  reply: FastifyReply,
-): Promise<TokenIdentity | null> {
-  const raw = parseBearer(request.headers.authorization);
-  const identity = raw === null ? null : await resolveApiToken(engine, raw);
-  if (!identity) {
-    reply.header('WWW-Authenticate', 'Bearer');
-    await reply.code(401).send({ error: 'unauthorized' });
-    return null;
-  }
-  request.identity = identity;
-  return identity;
-}
-
-/** Guard an operator route. Returns false once it has answered 401 or 503. */
-async function requireOperator(
-  operatorToken: string | null,
-  request: FastifyRequest,
-  reply: FastifyReply,
-): Promise<boolean> {
-  if (!operatorToken) {
-    await reply.code(503).send({ error: 'operator-api-disabled' });
-    return false;
-  }
-  if (!isOperator(request.headers.authorization, operatorToken)) {
-    reply.header('WWW-Authenticate', 'Bearer');
-    await reply.code(401).send({ error: 'unauthorized' });
-    return false;
-  }
-  return true;
 }
 
 export function createApp(options: AppOptions): WorkmillApp {
@@ -236,6 +191,27 @@ export function createApp(options: AppOptions): WorkmillApp {
     request.raw.on('error', finish);
     return reply;
   });
+
+  /**
+   * The tenant dashboard, SPEC.md feature 6.
+   *
+   * Served with no bearer because it carries no tenant data: it is a static
+   * document that fetches `/api/*` with a token the person pastes into it. The
+   * CSP is the interesting header — `default-src 'none'` with only `'self'` for
+   * connections means a browser refuses any request this page might one day
+   * grow to a CDN, a font host or an analytics script. "No external requests"
+   * stops being a rule a reviewer has to remember.
+   */
+  fastify.get('/', async (_request, reply) =>
+    reply
+      .code(200)
+      .type('text/html; charset=utf-8')
+      .header('content-security-policy', DASHBOARD_CSP)
+      .header('referrer-policy', 'no-referrer')
+      .send(DASHBOARD_HTML),
+  );
+
+  registerTenantApi(fastify, { engine });
 
   fastify.setNotFoundHandler(async (_request, reply) =>
     reply.code(404).send({ error: 'not-found' }),

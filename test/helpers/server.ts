@@ -22,7 +22,26 @@ export interface TestServer {
   readonly opsLog: MemoryOpsLog;
   /** GET one path, with an optional bearer. */
   get(path: string, token?: string): Promise<Response>;
+  /** POST one path with a JSON body, with an optional bearer. */
+  post(path: string, body: unknown, token?: string): Promise<Response>;
+  /** GET one path and parse the JSON body — `{ status, body }`. */
+  getJson(path: string, token?: string): Promise<JsonResponse>;
+  /** POST one path and parse the JSON body — `{ status, body }`. */
+  postJson(path: string, body: unknown, token?: string): Promise<JsonResponse>;
   close(): Promise<void>;
+}
+
+/** A parsed reply: the status, and whatever JSON came back (`{}` if none). */
+export interface JsonResponse {
+  status: number;
+  ok: boolean;
+  body: Record<string, unknown>;
+  headers: Headers;
+}
+
+async function toJson(response: Response): Promise<JsonResponse> {
+  const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  return { status: response.status, ok: response.ok, body, headers: response.headers };
 }
 
 export type TestServerOptions = Omit<AppOptions, 'engine' | 'opsLog'>;
@@ -39,12 +58,21 @@ export async function startTestServer(
     throw new Error('test server did not bind a TCP port');
   }
   const url = `http://127.0.0.1:${address.port}`;
+  const get = (path: string, token?: string): Promise<Response> =>
+    fetch(`${url}${path}`, token ? { headers: { authorization: `Bearer ${token}` } } : undefined);
+  const post = (path: string, body: unknown, token?: string): Promise<Response> => {
+    const headers: Record<string, string> = { 'content-type': 'application/json' };
+    if (token !== undefined) headers['authorization'] = `Bearer ${token}`;
+    return fetch(`${url}${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
+  };
   return {
     url,
     app,
     opsLog,
-    get: (path, token) =>
-      fetch(`${url}${path}`, token ? { headers: { authorization: `Bearer ${token}` } } : undefined),
+    get,
+    post,
+    getJson: (path, token) => get(path, token).then(toJson),
+    postJson: (path, body, token) => post(path, body, token).then(toJson),
     close: () => app.fastify.close(),
   };
 }
