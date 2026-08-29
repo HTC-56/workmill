@@ -206,7 +206,7 @@ grep your section header.
 - [x] §G6 — Write `test/events.test.ts`: the `EventBus` filter, replay and SSE
       frame helpers from `src/ops/events.ts`. No database. Pattern file
       `test/render.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §G7 — Write `test/metrics.test.ts`: `renderMetrics` on a hand-built
+- [x] §G7 — Write `test/metrics.test.ts`: `renderMetrics` on a hand-built
       snapshot plus `collectMetrics` against a migrated database. Pattern file
       `test/ledger.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §G8 — Write `test/server.test.ts`: `/healthz`, the `/metrics` operator
