@@ -209,7 +209,7 @@ grep your section header.
 - [x] §G7 — Write `test/metrics.test.ts`: `renderMetrics` on a hand-built
       snapshot plus `collectMetrics` against a migrated database. Pattern file
       `test/ledger.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §G8 — Write `test/server.test.ts`: `/healthz`, the `/metrics` operator
+- [x] §G8 — Write `test/server.test.ts`: `/healthz`, the `/metrics` operator
       guard and the 404, through `test/helpers/server.ts`. Pattern file
       `test/runner.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §G9 — Write `test/sse.test.ts`: `/events` — the 401s, tenant-scoped
