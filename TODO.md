@@ -62,7 +62,7 @@ then grep your section header.
       `clearDemo`'s cascade and its non-demo refusal, and `resetDemo`'s new
       tokens. Pattern file `test/tenancy.test.ts`. Gate: typecheck + test +
       scrub-check.
-- [ ] §J7 — Write `test/schedule.test.ts`: `listTenantIds`, `sweepOnce` and
+- [x] §J7 — Write `test/schedule.test.ts`: `listTenantIds`, `sweepOnce` and
       `startRunnerLoop` against the stub gateway. Call `sweep()` yourself; never
       wait for the timer. Pattern file `test/metering.test.ts`. Gate: typecheck
       + test + scrub-check.
