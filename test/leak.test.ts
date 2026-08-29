@@ -33,6 +33,8 @@ const EXPECTED_TABLES = [
   'job_results',
   'token_ledger',
   'api_tokens',
+  'support_grants',
+  'audit_log',
 ] as const;
 
 /** A unique address per fixture row; the users index is unique per tenant. */
@@ -210,6 +212,26 @@ async function seedRow(sql: Session, table: string, tenant: TestTenant): Promise
     );
     return row!.id;
   }
+  if (table === 'support_grants') {
+    // sql/008 requires a reason of at least eight characters and an expiry
+    // strictly after creation; a grant with neither cannot be written at all.
+    const [row] = await sql.query<{ id: string }>(
+      `INSERT INTO support_grants (tenant_id, reason, granted_by, expires_at)
+       VALUES ($1, $2, 'seed operator', now() + interval '1 hour') RETURNING id`,
+      [tenant.id, `seed support access for ${tenant.slug}`],
+    );
+    return row!.id;
+  }
+  if (table === 'audit_log') {
+    // No grant_id: sql/008 makes it optional, and an entry about the tenant
+    // itself is the simpler row to seed.
+    const [row] = await sql.query<{ id: string }>(
+      `INSERT INTO audit_log (tenant_id, actor, action, detail)
+       VALUES ($1, 'seed operator', 'tenant.provisioned', $2::jsonb) RETURNING id`,
+      [tenant.id, JSON.stringify({ slug: tenant.slug })],
+    );
+    return row!.id;
+  }
   throw new Error(`leak suite has no fixture for tenant-scoped table "${table}" — add one here`);
 }
 
@@ -316,6 +338,21 @@ async function insertForeignRow(sql: Session, table: string, victim: TestTenant)
     );
     return;
   }
+  if (table === 'support_grants') {
+    await sql.query(
+      `INSERT INTO support_grants (tenant_id, reason, granted_by, expires_at)
+       VALUES ($1, 'stolen support access', 'stolen', now() + interval '1 hour')`,
+      [victim.id],
+    );
+    return;
+  }
+  if (table === 'audit_log') {
+    await sql.query(
+      `INSERT INTO audit_log (tenant_id, actor, action) VALUES ($1, 'stolen', 'support.granted')`,
+      [victim.id],
+    );
+    return;
+  }
   throw new Error(`leak suite has no foreign-insert case for "${table}" — add one here`);
 }
 
@@ -401,6 +438,10 @@ describe.each(EXPECTED_TABLES)('tenant isolation on %s', (table) => {
     if (t === 'job_results') return "model = 'hacked'";
     if (t === 'token_ledger') return "model = 'hacked'";
     if (t === 'api_tokens') return "name = 'hacked'";
+    // Eight characters minimum, per the CHECK in sql/008 — 'hacked' alone is
+    // refused by the constraint before RLS ever gets a say.
+    if (t === 'support_grants') return "reason = 'hacked by the leak suite'";
+    if (t === 'audit_log') return "actor = 'hacked'";
     throw new Error(`leak suite has no UPDATE SET clause for "${t}" — add one here`);
   }
 
