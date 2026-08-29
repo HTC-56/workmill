@@ -212,12 +212,12 @@ grep your section header.
 - [x] §G8 — Write `test/server.test.ts`: `/healthz`, the `/metrics` operator
       guard and the 404, through `test/helpers/server.ts`. Pattern file
       `test/runner.test.ts`. Gate: typecheck + test + scrub-check.
-- [ ] §G9 — Write `test/sse.test.ts`: `/events` — the 401s, tenant-scoped
+- [x] §G9 — Write `test/sse.test.ts`: `/events` — the 401s, tenant-scoped
       delivery, and unsubscribe on close. Pattern file `test/server.test.ts`.
       Gate: typecheck + test + scrub-check.
-- [ ] §G10 — Update `README.md`: Phase G status, one Layout line each for
+- [x] §G10 — Update `README.md`: Phase G status, one Layout line each for
       `src/server/` and `src/ops/`, one migrations line for `sql/007_api.sql`.
       Every command shown must already work. Gate: `bash verify.sh` green.
-- [ ] §G11 — Close the phase: append a Phase G section to `STATUS.md`, flip
+- [x] §G11 — Close the phase: append a Phase G section to `STATUS.md`, flip
       `ROADMAP.md` row #8 to SHIPPED, and record the four reservations §G11
       names. Gate: `bash verify.sh` green.

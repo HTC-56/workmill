@@ -64,8 +64,15 @@ is no HTTP surface — no server, no dashboard.
 ledger records usage in the same transaction as the result, item caps
 and concurrency limits are enforced by triggers at the data layer, a
 daily budget stops new submissions when spent, and an order reports
-exactly when the budget ran out. Still missing: no HTTP surface, no
-dashboard, nothing schedules the runner.
+exactly when the budget ran out.
+
+**Phase G** — the ops surface is live: `/healthz` (liveness probe),
+`/metrics` (operator-bearer-protected Prometheus exposition), and
+`/events` (tenant-scoped SSE stream of job and order transitions,
+authenticated with a tenant bearer token). The operator bearer is read
+from `WORKMILL_OPERATOR_TOKEN`; an unset value disables the operator
+routes. Still missing: neither page exists yet (the dashboard is
+ROADMAP row #6, the console row #7), and nothing schedules the runner.
 
 ## Quickstart
 
@@ -111,6 +118,8 @@ bash scripts/live-check.sh    # real-gateway proof — needs a real gateway and 
 - `src/gateway/` — the OpenAI-compatible client, the JSON Schema subset validator, the bounded re-ask
 - `src/runner/run.ts` — the tick: claim, call the gateway, record results and usage
 - `src/metering/` — the token ledger and the entitlement refusals
-- `sql/` — numbered SQL migrations (append-only), including `sql/006_metering.sql`
+- `src/server/` — the HTTP app (Fastify), the auth seam, and the operator bearer guard
+- `src/ops/` — events (in-process bus, SSE helpers), metrics (Prometheus exposition), the JSONL ops log
+- `sql/` — numbered SQL migrations (append-only), including `sql/006_metering.sql` and `sql/007_api.sql`
 - `test/` — leak suite, seam tests, claim tests, migration tests
 - `scripts/` — `scrub-check.sh` public-repo gate

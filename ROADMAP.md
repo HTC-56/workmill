@@ -12,7 +12,7 @@ are the one permitted exception to append-only docs.
 | 5 | Metering + entitlements at the data layer | SHIPPED | F | `token_ledger` under RLS, item caps as triggers, concurrency cap and daily budget in the claim query, budget exhaustion stamps orders; nothing serves it over HTTP yet |
 | 6 | Tenant dashboard (self-contained page) | NOT BUILT | — | hero screenshot |
 | 7 | Operator console (grants, audit, fleet panel) | NOT BUILT | — | |
-| 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | PARTIAL | G | routes, both bearers and the JSONL ledger are committed; Phase G's remaining tasks are their tests and the docs |
+| 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | SHIPPED | G | three routes, two bearer types, JSONL ops log, in-process event bus, and the tenant-scoped SSE stream are all committed and tested |
 | 9 | Demo mode + deploy-grade packaging (seed/reset, config, units, dual-engine CI, quickstart) | PARTIAL | A | dual-engine CI landed early — it is the only place the Postgres half of Phase A's proof runs; everything else pending |
 | — | docs/PROCESS.md (three PoCs → one product, the loop story) | NOT BUILT | — | written near the end, when there is a ledger to excerpt |
 

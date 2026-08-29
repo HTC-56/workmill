@@ -71,3 +71,14 @@ queue refuses to hand out work when limits are reached. Budget exhaustion stamps
 the order (it says why) but does not cancel a running job.
 
 Nothing serves any of this over HTTP, and `DEFAULT_ENTITLEMENTS` is still provisional.
+
+## Phase G — the ops surface
+
+Three routes now exist and are covered by tests: `/healthz` (liveness probe),
+`/metrics` (Prometheus exposition behind the operator bearer), and `/events`
+(tenant-scoped SSE stream of job and order transitions, authenticated with a
+tenant bearer). `api_tokens` makes twelve tenant-scoped tables the leak suite
+proves. `/metrics` sits behind the operator bearer and carries no tenant labels.
+The runner publishes transitions to an in-process bus when given one. Deliberately
+left: no page renders any of it, and nothing schedules the runner or serves the
+process.
