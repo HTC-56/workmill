@@ -13,7 +13,10 @@ import { collectMetrics, renderMetrics } from '../ops/metrics.js';
 import { nullOpsLog, type OpsLog } from '../ops/opslog.js';
 import { requireOperator, requireTenant } from './guards.js';
 import { registerTenantApi } from './api.js';
+import { registerOperatorApi } from './operator-api.js';
 import { DASHBOARD_CSP, DASHBOARD_HTML } from '../dashboard/page.js';
+import { CONSOLE_CSP, CONSOLE_HTML } from '../console/page.js';
+import type { GatewayConfig } from '../gateway/client.js';
 
 /**
  * The HTTP surface (SPEC.md feature 8).
@@ -38,9 +41,10 @@ import { DASHBOARD_CSP, DASHBOARD_HTML } from '../dashboard/page.js';
  * with 503 — a missing secret means "off", never "unguarded".
  *
  * The dashboard (ROADMAP row #6) registers onto the same instance from
- * `registerTenantApi`; the operator console (row #7) will do the same in its
- * own phase. The two guards both surfaces share moved to `./guards.ts` when the
- * second caller appeared.
+ * `registerTenantApi`, and the operator console (row #7) from
+ * `registerOperatorApi`. The two guards all three surfaces share live in
+ * `./guards.ts`, because a guard that exists twice is a guard that will one day
+ * disagree with itself about what "unauthorized" means.
  */
 
 /** Prometheus' text exposition content type, version included as it expects. */
@@ -60,6 +64,11 @@ export interface AppOptions {
   opsLog?: OpsLog;
   /** The static operator bearer. Null disables every operator route. */
   operatorToken?: string | null;
+  /**
+   * Where the model gateway lives, for the console's fleet panel to probe.
+   * Null means none is configured, and the panel says so rather than guessing.
+   */
+  gateway?: GatewayConfig | null;
   /** Overridable so tests can assert on uptime without waiting. */
   now?: () => number;
   /** Milliseconds between SSE keep-alive comments. */
@@ -211,7 +220,26 @@ export function createApp(options: AppOptions): WorkmillApp {
       .send(DASHBOARD_HTML),
   );
 
+  /**
+   * The operator console, SPEC.md feature 7.
+   *
+   * Served with no bearer for the same reason `GET /` is: it is a static
+   * document carrying no data and no credential. Everything it can DO needs the
+   * operator bearer, and every one of those routes checks it. Guarding the
+   * document itself would protect nothing and hide the 503 that tells an
+   * operator their token is not configured.
+   */
+  fastify.get('/operator', async (_request, reply) =>
+    reply
+      .code(200)
+      .type('text/html; charset=utf-8')
+      .header('content-security-policy', CONSOLE_CSP)
+      .header('referrer-policy', 'no-referrer')
+      .send(CONSOLE_HTML),
+  );
+
   registerTenantApi(fastify, { engine });
+  registerOperatorApi(fastify, { engine, operatorToken, gateway: options.gateway ?? null });
 
   fastify.setNotFoundHandler(async (_request, reply) =>
     reply.code(404).send({ error: 'not-found' }),

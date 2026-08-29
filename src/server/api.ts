@@ -14,6 +14,8 @@ import { cancelOrder, requeueJob } from '../queue/lifecycle.js';
 import { getWorkflow, WorkflowNotFoundError } from '../workflows/store.js';
 import { budgetStatus, EntitlementRefusedError, readLimits } from '../metering/limits.js';
 import { usageByDay } from '../metering/ledger.js';
+import { clampAuditLimit, listAudit } from '../operator/audit.js';
+import { activeSupportGrant, grantRemainingMs, isGrantActive, listSupportGrants } from '../operator/grants.js';
 
 /**
  * The tenant JSON API the dashboard is made of (SPEC.md feature 6).
@@ -255,5 +257,41 @@ export function registerTenantApi(fastify: FastifyInstance, options: TenantApiOp
       budget: await budgetStatus(sql),
       byDay: await usageByDay(sql, USAGE_DAYS),
     })),
+  );
+
+  /**
+   * The tenant's own audit trail — the load-bearing half of SPEC.md feature 7.
+   *
+   * The operator console has its own view of these rows, but this route is the
+   * one that makes the trail mean anything: an operator log only the operator
+   * can read is a claim, and a row the tenant fetches with its own bearer is a
+   * receipt. Same table, same policies, no operator credential involved.
+   */
+  fastify.get<{ Querystring: { limit?: string } }>('/api/audit', async (request, reply) =>
+    asTenant(request, reply, async (sql) => ({
+      entries: await listAudit(sql, clampAuditLimit(request.query.limit)),
+    })),
+  );
+
+  /** Who has support access to this tenant right now, and for how much longer. */
+  fastify.get('/api/grants', async (request, reply) =>
+    asTenant(request, reply, async (sql) => {
+      const now = Date.now();
+      const grants = await listSupportGrants(sql);
+      const active = await activeSupportGrant(sql);
+      return {
+        grants: grants.map((grant) => ({
+          id: grant.id,
+          reason: grant.reason,
+          grantedBy: grant.grantedBy,
+          createdAt: grant.createdAt,
+          expiresAt: grant.expiresAt,
+          revokedAt: grant.revokedAt,
+          active: isGrantActive(grant, now),
+          remainingMs: grantRemainingMs(grant, now),
+        })),
+        activeGrantId: active?.id ?? null,
+      };
+    }),
   );
 }
