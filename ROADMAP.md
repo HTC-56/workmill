@@ -7,14 +7,14 @@ are the one permitted exception to append-only docs.
 |---|---|---|---|---|
 | 1 | Tenancy core under RLS + leak-test suite | SHIPPED | A, B, G, I | five nouns built and leak suite covers every one of them; Phase I's `support_grants` and `audit_log` bring it to fourteen tenant-scoped tables |
 | 2 | Workflows as tenant data (template + schema + model, versioned) | SHIPPED | C | definitions, versioning and the order pin are complete as tenant data; the pages that expose them are rows #6 and #7 |
-| 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | SHIPPED | A, E | claim proven in A; E adds lifecycle (heartbeat, backoff, dead-letter, requeue, cancel), runner tick, and durable `job_results` with output and token counts |
+| 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | SHIPPED | A, E, J | claim proven in A; E adds lifecycle (heartbeat, backoff, dead-letter, requeue, cancel), runner tick, and durable `job_results` with output and token counts; J finally puts `runOnce` on a timer |
 | 4 | Model calls through the gateway (schema validation, bounded re-ask, usage capture) | SHIPPED | D, E | client, JSON Schema subset validator and the bounded re-ask with usage capture, proven against the stub; usage attributed to jobs in `job_results`; aggregating it is the ledger (row #5) |
 | 5 | Metering + entitlements at the data layer | SHIPPED | F | `token_ledger` under RLS, item caps as triggers, concurrency cap and daily budget in the claim query, budget exhaustion stamps orders; nothing serves it over HTTP yet |
 | 6 | Tenant dashboard (self-contained page) | SHIPPED | H | one self-contained HTML file, six panels, no external request |
 | 7 | Operator console (grants, audit, fleet panel) | SHIPPED | I | page, nine operator routes, grants with a required reason and a TTL, and the tenant-readable audit trail are committed; all tests and the close are done |
 | 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | SHIPPED | G | three routes, two bearer types, JSONL ops log, in-process event bus, and the tenant-scoped SSE stream are all committed and tested |
-| 9 | Demo mode + deploy-grade packaging (seed/reset, config, units, dual-engine CI, quickstart) | PARTIAL | A | dual-engine CI landed early — it is the only place the Postgres half of Phase A's proof runs; everything else pending |
-| — | docs/PROCESS.md (three PoCs → one product, the loop story) | NOT BUILT | — | written near the end, when there is a ledger to excerpt |
+| 9 | Demo mode + deploy-grade packaging (seed/reset, config, units, dual-engine CI, quickstart) | PARTIAL | A, J | Phase J commits the process (`src/main.ts`, the runner schedule), the YAML config, the demo seed/reset, the four CLI commands and `pnpm build`; its tests, the units, the quickstart and the close are the task list |
+| — | docs/PROCESS.md (three PoCs → one product, the loop story) | PARTIAL | J | written in Phase J (§J10), now that there is a ledger to excerpt |
 
 When every row reads SHIPPED and verify.sh is green, the project is done — the
 planning lane declares PROJECT SPEC COMPLETE rather than inventing scope.
