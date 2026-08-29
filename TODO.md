@@ -184,6 +184,6 @@ new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 - [x] §F11 — Update `README.md`: Phase F status, one Layout line for
       `src/metering/`, one migrations line for `sql/006_metering.sql`. Every
       command shown must already work. Gate: `bash verify.sh` green.
-- [ ] §F12 — Close the phase: append a Phase F section to `STATUS.md`, flip
+- [x] §F12 — Close the phase: append a Phase F section to `STATUS.md`, flip
       `ROADMAP.md` row #5 to SHIPPED, and record the four reservations §F12
       names. Gate: `bash verify.sh` green.

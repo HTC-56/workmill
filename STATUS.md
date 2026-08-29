@@ -61,3 +61,13 @@ one row per job, with summed token counts across all gateway calls.
 
 Two things are deliberately left: usage is recorded per job but nothing aggregates
 or enforces it, and nothing schedules the runner — there is no server yet.
+
+## Phase F — metering and entitlements
+
+The `token_ledger` table lives under RLS and is billed in the same transaction as
+the job result. Item caps are enforced by SQL triggers on `token_ledger_items`; the
+concurrency cap and the daily budget are enforced inside the claim query so the
+queue refuses to hand out work when limits are reached. Budget exhaustion stamps
+the order (it says why) but does not cancel a running job.
+
+Nothing serves any of this over HTTP, and `DEFAULT_ENTITLEMENTS` is still provisional.

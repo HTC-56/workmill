@@ -9,7 +9,7 @@ are the one permitted exception to append-only docs.
 | 2 | Workflows as tenant data (template + schema + model, versioned) | SHIPPED | C | definitions, versioning and the order pin are complete as tenant data; the pages that expose them are rows #6 and #7 |
 | 3 | Work orders → durable jobs on Postgres (SKIP LOCKED, leases, DLQ, cancel) | SHIPPED | A, E | claim proven in A; E adds lifecycle (heartbeat, backoff, dead-letter, requeue, cancel), runner tick, and durable `job_results` with output and token counts |
 | 4 | Model calls through the gateway (schema validation, bounded re-ask, usage capture) | SHIPPED | D, E | client, JSON Schema subset validator and the bounded re-ask with usage capture, proven against the stub; usage attributed to jobs in `job_results`; aggregating it is the ledger (row #5) |
-| 5 | Metering + entitlements at the data layer | PARTIAL | F | the engine is committed — `token_ledger` under RLS, item caps as triggers, the concurrency cap and the daily budget inside the claim query, and a blocked order that says why; the test and doc tail is Phase F's task list |
+| 5 | Metering + entitlements at the data layer | SHIPPED | F | `token_ledger` under RLS, item caps as triggers, concurrency cap and daily budget in the claim query, budget exhaustion stamps orders; nothing serves it over HTTP yet |
 | 6 | Tenant dashboard (self-contained page) | NOT BUILT | — | hero screenshot |
 | 7 | Operator console (grants, audit, fleet panel) | NOT BUILT | — | |
 | 8 | Ops surface (/healthz, /metrics, /events, ledger, auth) | NOT BUILT | — | |
@@ -57,3 +57,19 @@ planning lane declares PROJECT SPEC COMPLETE rather than inventing scope.
   token ledger is ROADMAP row #5.
 - **`scripts/live-check.sh` exists but neither CI nor `verify.sh` runs it** — it
   requires a real gateway, and a human runs it before a demo deployment.
+- **a tenant with no entitlements row has no limits** — a named fail-open seam;
+  making it fail-closed waits until no test fixture makes a bare tenant;
+- **two runners claiming at the same instant** can exceed `max_concurrent_jobs` by
+  the headroom each one sees, because the cap is read from a snapshot inside the
+  claim; one runner never exceeds it, and the lease bounds the damage;
+- ~~**Usage is captured per call but persisted nowhere yet** — the result and its
+  token counts vanish when the process restarts; durability belongs to the runner
+  phase.~~ **Discharged in Phase F**: `token_ledger` holds usage under RLS, billed
+  in the same transaction as the result.
+- ~~**`job_results` holds usage but nothing aggregates it** — the per-tenant token
+  ledger is ROADMAP row #5.~~ **Discharged in Phase F**: `token_ledger` aggregates
+  usage per tenant, per day, and per order.
+- **`DEFAULT_ENTITLEMENTS` is still provisional** — there is a ledger to measure
+  against now, but no real-model corpus to measure;
+- **the budget refuses, it does not reserve** — a job already claimed finishes and
+  is billed even if that takes the tenant past the budget.
