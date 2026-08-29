@@ -91,3 +91,4 @@ time	lane	model	result	turns	out_tok	tools	edits	dur_s	task
 2026-08-29T00:44:53	plan	claude	commit	119	111210	74	25	797	plan next phase
 2026-08-29T00:47:43	loop	qwen	commit	59	10443	23	7	238	- [ ] §G4 — Write `test/auth.test.ts`: mint, resolve, revoke, expire and list
 2026-08-29T00:52:41	loop	qwen	commit	119	21661	46	14	296	- [ ] §G5 — Write `test/opslog.test.ts`: `redact`, `formatOpsLine` and the
+2026-08-29T01:18:10	loop	qwen	commit	128	36879	51	14	1528	- [ ] §G6 — Write `test/events.test.ts`: the `EventBus` filter, replay and SSE
