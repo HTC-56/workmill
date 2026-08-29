@@ -163,7 +163,7 @@ header in TASK_PHASE_E.md.
 `claimJobs` and `runOnce`). Every task below writes tests or docs — none needs
 new `src/` code. Grep your section header in TASK_PHASE_F.md and read it.
 
-- [ ] §F5 — Write `test/ledger.test.ts`: `recordUsage`, `tokensUsedToday`,
+- [x] §F5 — Write `test/ledger.test.ts`: `recordUsage`, `tokensUsedToday`,
       `tokensUsedForOrder`, `usageByDay` from `src/metering/ledger.ts`. Pattern
       file `test/lifecycle.test.ts`. Gate: typecheck + test + scrub-check.
 - [ ] §F6 — Write `test/limits.test.ts`: `readLimits` and the three
