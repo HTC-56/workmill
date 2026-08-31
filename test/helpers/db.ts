@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import postgres from 'postgres';
 import type { Engine, Session } from '../../src/db/engine.js';
 import { openEngine } from '../../src/db/open.js';
 import { migrate } from '../../src/db/migrate.js';
@@ -13,13 +14,27 @@ import { withAdmin } from '../../src/seam/withTenant.js';
  * skip a case the engine genuinely cannot express (see skipUnlessConcurrent).
  */
 export async function freshDb(): Promise<Engine> {
-  const engine = await openEngine();
-  if (engine.kind === 'postgres') {
-    // A real server is reused across files; start from bare schema each time.
-    await withAdmin(engine, async (sql) => {
-      await sql.exec('DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;');
-    });
+  const url = process.env.DATABASE_URL;
+  if (url) {
+    // Each call gets its OWN database, mirroring PGlite's per-call instance.
+    // The old approach (DROP SCHEMA public CASCADE on the shared database)
+    // broke any file that opens two fixtures: the second freshDb() wiped the
+    // first fixture's rows — a real-Postgres-only failure PGlite could never
+    // show. CREATE DATABASE cannot run inside a transaction, so this uses a
+    // one-off direct connection. Databases are named workmill_test_* and left
+    // behind; CI's service container is ephemeral, and a local test server
+    // can drop them wholesale.
+    const dbName = `workmill_test_${randomUUID().slice(0, 8)}`;
+    const admin = postgres(url, { max: 1, onnotice: () => undefined });
+    await admin.unsafe(`CREATE DATABASE "${dbName}"`);
+    await admin.end({ timeout: 5 });
+    const perCallUrl = new URL(url);
+    perCallUrl.pathname = `/${dbName}`;
+    const engine = await openEngine(perCallUrl.toString());
+    await migrate(engine);
+    return engine;
   }
+  const engine = await openEngine();
   await migrate(engine);
   return engine;
 }

@@ -13,6 +13,17 @@ export async function openPostgres(url: string, poolSize = 8): Promise<Engine> {
     // the type map alone so PGlite and postgres.js agree on shapes.
     onnotice: () => undefined,
     prepare: false,
+    types: {
+      // int8 (count(*), sums): PGlite parses to a JS number, postgres.js
+      // defaults to a string. Parse to Number so the engines agree — every
+      // tally here is far below 2^53.
+      int8ToNumber: {
+        to: 0,
+        from: [20],
+        serialize: (value: unknown) => String(value),
+        parse: (value: string) => Number(value),
+      },
+    },
   });
 
   return {

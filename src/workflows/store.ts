@@ -186,7 +186,11 @@ async function insertVersion(
       workflowId,
       version,
       definition.promptTemplate,
-      JSON.stringify(definition.outputSchema),
+      // Raw object, not JSON.stringify: postgres.js encodes a pre-stringified
+      // value as a jsonb *string*, tripping the jsonb_typeof(...) = 'object'
+      // check on real Postgres. PGlite accepts both, so only tests against a
+      // real server see the difference.
+      definition.outputSchema,
       definition.model,
       definition.temperature ?? DEFAULT_TEMPERATURE,
       definition.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,

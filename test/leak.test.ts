@@ -49,7 +49,7 @@ function freshSlug(prefix: string): string {
 
 /** The minimum definition sql/004 accepts: the template must carry {{input}}. */
 const FIXTURE_TEMPLATE = 'Summarise this: {{input}}';
-const FIXTURE_SCHEMA = JSON.stringify({ type: 'object', properties: { brief: { type: 'string' } } });
+const FIXTURE_SCHEMA = { type: 'object', properties: { brief: { type: 'string' } } };
 
 /**
  * A workflow version belonging to `tenant`, to pin an order to. Since
@@ -157,7 +157,7 @@ async function seedRow(sql: Session, table: string, tenant: TestTenant): Promise
       `INSERT INTO job_results
          (tenant_id, job_id, ok, output, raw_output, model, attempts)
        VALUES ($1, $2, true, $3::jsonb, $4, 'default', 1) RETURNING id`,
-      [tenant.id, job!.id, '{"brief":"seeded"}', '{"brief":"seeded"}'],
+      [tenant.id, job!.id, { brief: 'seeded' }, '{"brief":"seeded"}'],
     );
     return row!.id;
   }
@@ -228,7 +228,7 @@ async function seedRow(sql: Session, table: string, tenant: TestTenant): Promise
     const [row] = await sql.query<{ id: string }>(
       `INSERT INTO audit_log (tenant_id, actor, action, detail)
        VALUES ($1, 'seed operator', 'tenant.provisioned', $2::jsonb) RETURNING id`,
-      [tenant.id, JSON.stringify({ slug: tenant.slug })],
+      [tenant.id, { slug: tenant.slug }],
     );
     return row!.id;
   }
@@ -317,7 +317,7 @@ async function insertForeignRow(sql: Session, table: string, victim: TestTenant)
       `INSERT INTO job_results
          (tenant_id, job_id, ok, output, raw_output, model, attempts)
        VALUES ($1, $2, true, $3::jsonb, $4, 'stolen', 1)`,
-      [victim.id, seeded.get('jobs')!.bob, '{"brief":"stolen"}', 'stolen'],
+      [victim.id, seeded.get('jobs')!.bob, { brief: 'stolen' }, 'stolen'],
     );
     return;
   }

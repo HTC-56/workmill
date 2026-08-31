@@ -23,11 +23,11 @@ let tokenB: string;
 let orderId: string;
 
 // A schema that the stub's default output matches.
-const OUTPUT_SCHEMA = JSON.stringify({
+const OUTPUT_SCHEMA = {
   type: 'object',
   properties: { brief: { type: 'string' } },
   required: ['brief'],
-});
+};
 
 beforeAll(async () => {
   db = await freshDb();

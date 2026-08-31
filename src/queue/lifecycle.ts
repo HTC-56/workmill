@@ -205,10 +205,13 @@ export async function finishJob(
       job.tenant_id,
       jobId,
       outcome.ok,
-      outcome.ok ? JSON.stringify(outcome.output) : null,
+      // Raw values, not JSON.stringify: postgres.js encodes a pre-stringified
+      // value as a jsonb *string*, tripping job_results' jsonb_typeof checks
+      // on real Postgres. PGlite accepts both.
+      outcome.ok ? outcome.output : null,
       outcome.raw,
       outcome.ok ? null : outcome.reason,
-      JSON.stringify(outcome.ok ? [] : outcome.errors.map(trimError)),
+      outcome.ok ? [] : outcome.errors.map(trimError),
       outcome.model,
       outcome.attempts,
       outcome.usage.promptTokens,

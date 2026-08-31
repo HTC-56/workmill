@@ -37,7 +37,8 @@ beforeAll(async () => {
       `SELECT w.id AS workflow_id, v.id AS version_id, w.current_version AS version
          FROM workflows w
          JOIN workflow_versions v ON v.workflow_id = w.id AND v.version = w.current_version
-        WHERE w.slug = ANY($1)`,
+        WHERE w.slug = ANY($1)
+        ORDER BY array_position($1::text[], w.slug)`,
       [aSeed.map((s) => s.slug)],
     ) as Promise<{ workflow_id: string; version_id: string; version: number }[]>,
   );

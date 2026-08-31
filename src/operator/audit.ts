@@ -95,7 +95,9 @@ export async function recordAudit(sql: Session, request: AuditRequest): Promise<
   const [row] = await sql.query<{ id: string }>(
     `INSERT INTO audit_log (tenant_id, actor, action, detail, grant_id)
      VALUES (app_tenant_id(), $1, $2, $3::jsonb, $4::uuid) RETURNING id`,
-    [actor, action, JSON.stringify(request.detail ?? {}), request.grantId ?? null],
+    // detail passes raw, not JSON.stringify: postgres.js encodes a
+    // pre-stringified value as a jsonb *string* on real Postgres.
+    [actor, action, request.detail ?? {}, request.grantId ?? null],
   );
   if (!row) throw new Error('audit insert returned no row');
   return row.id;
