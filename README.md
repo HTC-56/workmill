@@ -7,6 +7,14 @@ becomes a durable job that runs through an OpenAI-compatible local-model
 gateway, gets validated against the schema, and lands tenant-scoped with a
 full paper trail: model, tokens, latency, spend against the tenant's budget.
 
+![workmill — the tenant dashboard over a live demo run: three completed orders, per-order token spend, budget bar](docs/hero.png)
+
+The screenshot is a real run, not a mock: the seeded demo tenants, thirteen
+jobs through a live [local-ai-gateway](https://github.com/HTC-56/local-ai-gateway)
+backed by a local model, `scripts/live-check.sh` 3/3 green against the same
+gateway (2026-08-31), and the second tenant's five-item order stopped mid-order
+by `daily-token-budget-exhausted` — the metering doing what it promises.
+
 Built end-to-end by an autonomous local-model coding loop; the commit history
 is part of the deliverable.
 
